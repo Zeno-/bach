@@ -18,9 +18,9 @@ int main(void)
     fputs("Video subsystem running\n", stdout);
 
     size_t i;
-    for (i = 0; i < 100000; i++) {
+    for (i = 0; i < 50000; i++) {
         //vpu_curssetpos(0, 0);
-        sprintf(str, "%zu\n", i);
+        sprintf(str, "This is line number: %zu\n", i+1);
         vpu_puts(str);
         vpu_refresh(VPU_FORCEREFRESH_FALSE);
     }
