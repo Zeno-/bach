@@ -15,7 +15,7 @@ void vpu_refresh_tlayer(void)
 {
     uint32_t fgcolour, bgcolour;
     uint32_t *dest;
-    uint8_t  *currchval, *prevchval;
+    uint8_t  *currchval;
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
 
@@ -36,10 +36,8 @@ void vpu_refresh_tlayer(void)
 
     for (r = 0; r < nrows; r++) {
         for (c = 0; c < ncols; c++) {
-            blitglyph(*currchval, dest, fgcolour, bgcolour);
+            blitglyph(*currchval++, dest, fgcolour, bgcolour);
             dest += xdelta;
-            currchval++;
-            prevchval++;
         }
         dest += ydelta;
     }

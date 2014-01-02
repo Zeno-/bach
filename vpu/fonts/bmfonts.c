@@ -804,28 +804,7 @@ const struct vidfont8 vidfont8x16 = { 16, fontdata_vga16 };
 
 const unsigned char *vidfont_getglyph(const struct vidfont8 *font, int ch)
 {
+    /* Using bitshifts and all that kind of stuff is not actually faster
+    */
     return font->pixeldata + ch * font->height;
-
-#if 0   // none of this is actually faster
-    const unsigned char *glyph;
-    const unsigned char *start;
-
-    start = font->pixeldata;
-
-    switch (font->height) {
-        case 8:
-            glyph = start + (ch << 3);
-            break;
-        //case 14:
-        //    glyph = start + (ch << 3) + (ch << 2) + (ch << 1);
-        //    break;
-        case 16:
-            glyph = start + (ch << 4);
-            break;
-        default:
-            glyph = start + ch * font->height;
-            break;
-    }
-    return glyph;
-#endif
 }
