@@ -57,31 +57,33 @@ static void blitglyph(int ch, uint32_t *dest,
                       uint32_t fgcolour, uint32_t bgcolour, uint8_t attr)
 {
     unsigned fontheight, mask;
-    const unsigned char *glyph, *src;
+    const unsigned char *glyph;
     unsigned char gpx;
     unsigned i;
     uint32_t *destrow;
-    unsigned destdelta = VPU_PRV_INSTANCE.w;
+    unsigned destdelta;
 
     glyph = VPU_PRV_INSTANCE.fixedfont->pixeldata
             + ch * VPU_PRV_INSTANCE.fixedfont->height;
 
     fontheight = VPU_PRV_INSTANCE.fixedfont->height;
 
-    for (mask = 1<<(VPU_FIXED_FONT_WIDTH-1); mask != 0; mask >>= 1) {
-        destrow = dest;
-        src = glyph;
-        for (i = 0; i < fontheight; i++) {
-            gpx = *src;
-            if (attr & VPU_TXTATTRIB_REVERSE)
-                gpx = ~gpx;
+    destdelta = VPU_TL.cols * VPU_FIXED_FONT_WIDTH;
+    destrow = dest;
+
+    for (i = 0; i < fontheight; i++) {
+        gpx = *glyph;
+        dest = destrow;
+        if (attr & VPU_TXTATTRIB_REVERSE)
+            gpx = ~gpx;
+        for (mask = 1<<(VPU_FIXED_FONT_WIDTH-1); mask != 0; mask >>= 1) {
             if (gpx & mask)
-                *destrow = fgcolour;
+                *dest = fgcolour;
             else if (!(attr & VPU_TXTATTRIB_TRANSPARENT))
-                *destrow = bgcolour;
-            destrow += destdelta;
-            src++;
+                *dest = bgcolour;
+            dest++;
         }
-        dest++;
+        destrow += destdelta;
+        glyph++;
     }
 }
