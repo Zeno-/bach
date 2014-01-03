@@ -12,4 +12,6 @@
 
 #define VPU_FPSLIMIT        60
 
+#define DEFAULT_PROGNAME    "Zeno Software Central Processing Unit"
+
 #endif /* VPU_BACKENDCONFIG_H */

@@ -54,6 +54,8 @@ vpu_init(unsigned w, unsigned h, int fullscreen)
      */
     atexit(vpu_cleanup);
 
+    SDL_WM_SetCaption(DEFAULT_PROGNAME, NULL);
+
     initfpstimer(VPU_FPSLIMIT);
 
     if ((err = inittextsys() != VPU_ERR_NONE))
