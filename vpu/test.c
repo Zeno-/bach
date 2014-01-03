@@ -8,14 +8,43 @@
 
 int main(void)
 {
-    char str[30];
-    uint32_t fgcolour;
-    uint32_t altcolour;
-
     if (vpu_init(SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0) != VPU_ERR_NONE) {
         fputs("Could not init VPU\n", stderr);
         exit(1);
     }
+#if 1
+    struct display *scr;
+    int i, r, c;
+
+    scr = vpu_getinstance();
+
+    vpu_settextfg(vpu_rgbto32(0xa0, 0, 0));
+    vpu_puts("Video subsystem   : Running\n");
+    vpu_puts("VPU Backend       : ");
+    vpu_puts(vpu_backendinfostr());
+    vpu_puts("\n---------------------------------------------\n");
+
+    vpu_settextattr(VPU_TXTATTRIB_REVERSE);
+    vpu_settextlayerflags( vpu_textlayerflags() & ~VPU_TXTAUTOSCROLL);
+
+    for (i = 0; i < 10000; i++) {
+        vpu_curssetpos(0, 3);
+        for (r = 3; r < scr->txt.rows; r++) {
+            for (c = 0; c < scr->txt.cols; c++) {
+                vpu_settextfg(vpu_rgbto32(r + c, 0, r + c));
+                vpu_putchar(' ');
+            }
+            vpu_puts("\n");
+            vpu_refresh(VPU_FORCEREFRESH_FALSE);
+        }
+    }
+    vpu_refresh(VPU_FORCEREFRESH_TRUE);
+    sleep(2);
+#else
+    char str[30];
+    uint32_t fgcolour;
+    uint32_t altcolour;
+
 
     fputs("Video subsystem running\n", stdout);
 
@@ -32,7 +61,7 @@ int main(void)
 
     vpu_settextattr(VPU_TXTATTRIB_REVERSE);
 
-    for (i = 0; i < 100000; i++) {
+    for (i = 0; i < 10000; i++) {
         fgcolour = i & 1 ? DEFAULT_TEXTFG : altcolour;
 
         //vpu_curshome();
@@ -46,6 +75,7 @@ int main(void)
     sleep(2);
 
     fputs("Exiting\n", stdout);
+#endif
 
     return 0;
 }

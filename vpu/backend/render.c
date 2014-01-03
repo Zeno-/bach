@@ -75,12 +75,10 @@ static void blitglyph(int ch, uint32_t *dest,
             gpx = *src;
             if (attr & VPU_TXTATTRIB_REVERSE)
                 gpx = ~gpx;
-            if (gpx
-                    & mask) {
+            if (gpx & mask)
                 *destrow = fgcolour;
-            } else if (!(VPU_TL.flags & VPU_TXTLAYEROVERLAY)) {
+            else if (!(VPU_TL.flags & VPU_TXTLAYEROVERLAY))
                 *destrow = bgcolour;
-            }
             destrow += destdelta;
             src++;
         }
