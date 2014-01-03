@@ -77,7 +77,7 @@ static void blitglyph(int ch, uint32_t *dest,
                 gpx = ~gpx;
             if (gpx & mask)
                 *destrow = fgcolour;
-            else if (!(VPU_TL.flags & VPU_TXTLAYEROVERLAY))
+            else if (!(attr & VPU_TXTATTRIB_TRANSPARENT))
                 *destrow = bgcolour;
             destrow += destdelta;
             src++;

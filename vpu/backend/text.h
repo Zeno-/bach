@@ -17,8 +17,11 @@
         + (x) + (y) * VPU_TL.cols \
     )
 
-#define TXTATTRPOS(x, y) ( \
-    VPU_TL_ATTRMEM + (y) * VPU_TL.cols + (x) )
+#define TXTATTRPOS(x, y) \
+    ( \
+        VPU_TL_ATTRMEM \
+        + (x) + (y) * VPU_TL.cols \
+    )
 
 uint32_t    *vpu_txtpixelorigin(uint8_t x, uint8_t y);
 
@@ -30,8 +33,8 @@ void        vpu_scrolltexty(void);
 
 uint32_t    vpu_textfg(void);
 void        vpu_settextfg(uint32_t newcolour);
-uint32_t    vpu_textattr(void);
-void        vpu_settextattr(uint32_t attr);
+uint8_t     vpu_textattr(void);
+void        vpu_settextattr(uint8_t attr);
 
 void        vpu_putchar(int ch);
 void        vpu_putchar_c(int ch, uint32_t colour);

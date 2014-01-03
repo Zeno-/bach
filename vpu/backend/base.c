@@ -106,12 +106,15 @@ vpu_shouldrefresh(void)
 
 
 void
-vpu_refresh(int force)
+vpu_refresh(enum vpu_refreshaction action)
 {
-    if (!force && !vpu_shouldrefresh())
+    if (!vpu_shouldrefresh()
+            && action != VPU_REFRESH_FORCE
+            && action != VPU_REFRESH_COMMITONLY)
         return;
     vpu_refresh_tlayer();
-    SDL_Flip(VID_PRV_SURFACE);
+    if (action != VPU_REFRESH_COMMITONLY)
+        SDL_Flip(VID_PRV_SURFACE);
 }
 
 void

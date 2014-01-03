@@ -95,14 +95,14 @@ vpu_settextfg(uint32_t newcolour)
     VPU_TL.fgcolour = newcolour;
 }
 
-uint32_t
+uint8_t
 vpu_textattr(void)
 {
     return VPU_TL.attrib;
 }
 
 void
-vpu_settextattr(uint32_t attr)
+vpu_settextattr(uint8_t attr)
 {
     VPU_TL.attrib = attr;
 }

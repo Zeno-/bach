@@ -24,10 +24,12 @@ int main(void)
     vpu_puts(vpu_backendinfostr());
     vpu_puts("\n---------------------------------------------\n");
 
-    vpu_settextattr(VPU_TXTATTRIB_REVERSE);
+
     vpu_settextlayerflags( vpu_textlayerflags() & ~VPU_TXTAUTOSCROLL);
 
-    for (i = 0; i < 10000; i++) {
+
+    for (i = 0; i < 1000; i++) {
+        vpu_settextattr(VPU_TXTATTRIB_REVERSE);
         vpu_curssetpos(0, 3);
         for (r = 3; r < scr->txt.rows; r++) {
             for (c = 0; c < scr->txt.cols; c++) {
@@ -35,10 +37,19 @@ int main(void)
                 vpu_putchar(' ');
             }
             vpu_puts("\n");
-            vpu_refresh(VPU_FORCEREFRESH_FALSE);
         }
+
+        vpu_refresh(VPU_REFRESH_COMMITONLY);
+
+        vpu_settextattr(VPU_TXTATTRIB_TRANSPARENT);
+        vpu_curssetpos(30,30);
+        vpu_settextfg(vpu_rgbto32(0xc0, 0xc0, 0x00));
+        vpu_puts("This is a test");
+
+        vpu_refresh(VPU_REFRESH_NORMAL);
     }
-    vpu_refresh(VPU_FORCEREFRESH_TRUE);
+
+    vpu_refresh(VPU_REFRESH_FORCE);
     sleep(2);
 #else
     char str[30];

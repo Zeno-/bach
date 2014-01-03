@@ -12,17 +12,18 @@ enum vpuerror {
 
 enum vpu_txtlayerflags {
     VPU_TXTAUTOSCROLL   = (1 << 0),
-    VPU_TXTLAYERVISIBLE = (1 << 1),
-    VPU_TXTLAYEROVERLAY = (1 << 2)
+    VPU_TXTLAYERVISIBLE = (1 << 1)
 };
 
 enum vpu_txtlayerattribs {
-    VPU_TXTATTRIB_REVERSE = (1 << 0)
+    VPU_TXTATTRIB_REVERSE       = (1 << 0),
+    VPU_TXTATTRIB_TRANSPARENT   = (1 << 1)
 };
 
-enum {
-    VPU_FORCEREFRESH_FALSE  = 0,
-    VPU_FORCEREFRESH_TRUE   = 1
+enum vpu_refreshaction {
+    VPU_REFRESH_NORMAL  = 0,
+    VPU_REFRESH_FORCE   = 1,
+    VPU_REFRESH_COMMITONLY     = 2
 };
 
 struct txtlayer {
@@ -67,7 +68,7 @@ struct display *vpu_getinstance(void);
  */
 int vpu_shouldrefresh(void);
 
-void vpu_refresh(int force);
+void vpu_refresh(enum vpu_refreshaction action);
 void vpu_clrdisplay(void);
 
 uint32_t vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b);
