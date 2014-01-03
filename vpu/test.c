@@ -6,8 +6,13 @@
 #include "vpu/backend/text.h"
 #include "vpu/backend/config.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
+#if !defined _WIN32
+    (void)argc; /* UNUSED */
+    (void)argv; /* UNUSED */
+#endif
+
     if (vpu_init(SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0) != VPU_ERR_NONE) {
         fputs("Could not init VPU\n", stderr);
         exit(1);
