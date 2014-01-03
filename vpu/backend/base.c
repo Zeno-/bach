@@ -165,6 +165,7 @@ initscr(unsigned w, unsigned h, int fullscreen)
     vpu_prv.h = h;
     vpu_prv.txt.fgcolour = DEFAULT_TEXTFG;
     vpu_prv.txt.bgcolour = DEFAULT_TEXTBG;
+    vpu_prv.txt.attrib   = 0;
 
     return VPU_ERR_NONE;
 }

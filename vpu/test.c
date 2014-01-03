@@ -29,6 +29,9 @@ int main(void)
     vpu_puts("VPU Backend       : ");
     vpu_puts(vpu_backendinfostr());
     vpu_puts_c("\n---------------------------------------------\n", fgcolour);
+
+    vpu_settextattr(VPU_TXTATTRIB_REVERSE);
+
     for (i = 0; i < 100000; i++) {
         fgcolour = i & 1 ? DEFAULT_TEXTFG : altcolour;
 

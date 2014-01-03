@@ -9,13 +9,16 @@
 #include "text.h"
 
 static void blitglyph(int ch, uint32_t *dest,
-                      uint32_t fgcolour, uint32_t bgcolour);
+                      uint32_t fgcolour, uint32_t bgcolour, uint8_t attr);
 
 void vpu_refresh_tlayer(void)
 {
     uint32_t bgcolour;
-    const uint32_t *fgcp;
+
     uint32_t *dest;
+    const uint32_t *fgcp;
+    uint8_t *atrp;
+
     uint8_t  *currchval;
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
@@ -37,10 +40,11 @@ void vpu_refresh_tlayer(void)
 
     currchval = VPU_TL_MEM;
     fgcp = TXTCOLORPOS(0,0);
+    atrp = TXTATTRPOS(0,0);
 
     for (r = 0; r < nrows; r++) {
         for (c = 0; c < ncols; c++) {
-            blitglyph(*currchval++, dest, *fgcp++, bgcolour);
+            blitglyph(*currchval++, dest, *fgcp++, bgcolour, *atrp++);
             dest += xdelta;
         }
         dest += ydelta;
@@ -50,10 +54,11 @@ void vpu_refresh_tlayer(void)
 }
 
 static void blitglyph(int ch, uint32_t *dest,
-                      uint32_t fgcolour, uint32_t bgcolour)
+                      uint32_t fgcolour, uint32_t bgcolour, uint8_t attr)
 {
     unsigned fontheight, mask;
     const unsigned char *glyph, *src;
+    unsigned char gpx;
     unsigned i;
     uint32_t *destrow;
     unsigned destdelta = VPU_PRV_INSTANCE.w;
@@ -67,7 +72,11 @@ static void blitglyph(int ch, uint32_t *dest,
         destrow = dest;
         src = glyph;
         for (i = 0; i < fontheight; i++) {
-            if (*src & mask) {
+            gpx = *src;
+            if (attr & VPU_TXTATTRIB_REVERSE)
+                gpx = ~gpx;
+            if (gpx
+                    & mask) {
                 *destrow = fgcolour;
             } else if (!(VPU_TL.flags & VPU_TXTLAYEROVERLAY)) {
                 *destrow = bgcolour;

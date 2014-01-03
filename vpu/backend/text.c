@@ -70,13 +70,25 @@ vpu_scrolltexty(void)
            VPU_TL.fgcolour,
            VPU_TL.cols);
 
-    /* TODO: FIXME: Scroll Attribs */
+    /* Scroll Attribs */
+    src  = TXTATTRPOS(0, 1);
+    dest = TXTATTRPOS(0, 0);
+    memmove(dest, src, (VPU_TL.cnum - VPU_TL.cols) * sizeof *src);
+    memset(TXTATTRPOS(0, VPU_TL.rows-1),
+           0,
+           VPU_TL.cols);
 }
 
 void
 vpu_settextfg(uint32_t newcolour)
 {
     VPU_TL.fgcolour = newcolour;
+}
+
+void
+vpu_settextattr(uint32_t attr)
+{
+    VPU_TL.attrib = attr;
 }
 
 /**************************************************************************
@@ -147,6 +159,7 @@ vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour)
 {
     *TXTCHPOS(x, y) = ch;
     *TXTCOLORPOS(x, y) = colour;
+    *TXTATTRPOS(x, y) = VPU_TL.attrib;
 }
 
 /**************************************************************************

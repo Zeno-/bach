@@ -29,6 +29,7 @@ void vpu_txtcls(void);
 void vpu_scrolltexty(void);
 
 void vpu_settextfg(uint32_t newcolour);
+void vpu_settextattr(uint32_t attr);
 
 void vpu_putchar(int ch);
 void vpu_puts(const char *s);

@@ -16,6 +16,10 @@ enum vpu_txtlayerflags {
     VPU_TXTLAYEROVERLAY = (1 << 2)
 };
 
+enum vpu_txtlayerattribs {
+    VPU_TXTATTRIB_REVERSE = (1 << 0)
+};
+
 enum {
     VPU_FORCEREFRESH_FALSE  = 0,
     VPU_FORCEREFRESH_TRUE   = 1
@@ -33,6 +37,7 @@ struct txtlayer {
 
     uint32_t    fgcolour;       /* Default colour used for font fg */
     uint32_t    bgcolour;       /* Default colour used for font bg */
+    uint8_t     attrib;         /* Default attributes */
 
     int         cursx, cursy;   /* Cursor position */
 
