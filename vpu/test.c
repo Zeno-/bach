@@ -1,6 +1,9 @@
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#if HAVE_UNISTD_H
+#   include <unistd.h>
+#endif
 
 #include "vpu/backend/base.h"
 #include "vpu/backend/text.h"
