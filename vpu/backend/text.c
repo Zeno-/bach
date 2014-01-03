@@ -91,20 +91,29 @@ vpu_putcharat(int ch, uint8_t x, uint8_t y)
     *TXTCHPOS(x, y) = ch;
 }
 
-void vpu_curssetpos(uint8_t x, uint8_t y)
+void
+vpu_curssetpos(uint8_t x, uint8_t y)
 {
     VPU_TL.cursx = x;
     VPU_TL.cursy = y;
 }
 
-void vpu_cursadvance(void)
+void
+vpu_curshome(void)
+{
+    VPU_TL.cursx = 0;
+}
+
+void
+vpu_cursadvance(void)
 {
     VPU_TL.cursx++;
     if (VPU_TL.cursx >= VPU_TL.cols)
         VPU_TL.cursx = 0;
 }
 
-void vpu_cursnewline(void)
+void
+vpu_cursnewline(void)
 {
     VPU_TL.cursx = 0;
     VPU_TL.cursy++;

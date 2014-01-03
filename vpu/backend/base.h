@@ -51,7 +51,7 @@ struct display {
 enum vpuerror vpu_init(unsigned w, unsigned h, int fullscreen);
 void vpu_cleanup(void);
 
-
+const char * vpu_backendinfostr(void);
 struct display *vpu_getinstance(void);
 
 /* Returns 0 if interval since prev refresh is less than fps

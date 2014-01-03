@@ -32,6 +32,7 @@ void vpu_putcharat(int ch, uint8_t x, uint8_t y);
 void vpu_chartoscreen(int ch, int x, int y);
 
 void vpu_curssetpos(uint8_t x, uint8_t y);
+void vpu_curshome(void);
 void vpu_cursadvance(void);
 void vpu_cursnewline(void);
 

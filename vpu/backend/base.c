@@ -1,14 +1,17 @@
-#include <SDL/SDL.h>
-#include <SDL/SDL_main.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
+
+#include <SDL/SDL.h>
+#include <SDL/SDL_main.h>
 
 #include "vpu/fonts/bmfonts.h"
 #include "base.h"
 #include "private.h"
 #include "config.h"
 #include "render.h"
+
+#define MAX_BACKENDSTRLEN 128
 
 struct fpsctx {
     uint32_t prevtick;
@@ -17,12 +20,12 @@ struct fpsctx {
 
 struct display vpu_prv;
 struct display_privdata vpu_pdata_prv;
-
 static struct fpsctx fpstimer;
+static char backendstr[MAX_BACKENDSTRLEN];
 
 static enum vpuerror initsys(void);
 static enum vpuerror initscr(unsigned w, unsigned h, int fullscreen);
-
+static void setbackendinfo(void);
 static void setfixedfont(struct display *screen,
                          const struct vidfont8 *font);
 
@@ -56,6 +59,8 @@ vpu_init(unsigned w, unsigned h, int fullscreen)
     if ((err = inittextsys() != VPU_ERR_NONE))
         return err;
 
+    setbackendinfo();
+
     return VPU_ERR_NONE;
 }
 
@@ -64,6 +69,12 @@ vpu_cleanup(void)
 {
     cleanuptextsys();
     SDL_Quit();
+}
+
+const char *
+vpu_backendinfostr(void)
+{
+    return backendstr;
 }
 
 struct display
@@ -156,6 +167,19 @@ initscr(unsigned w, unsigned h, int fullscreen)
     vpu_prv.txt.bgcolour = DEFAULT_TEXTBG;
 
     return VPU_ERR_NONE;
+}
+
+static void
+setbackendinfo(void)
+{
+
+    SDL_version compiled;
+
+    SDL_VERSION(&compiled);
+
+    snprintf(backendstr, MAX_BACKENDSTRLEN,
+             "Backend using SDL %u.%u.%u",
+             compiled.major, compiled.minor, compiled.patch);
 }
 
 static void

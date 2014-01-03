@@ -18,9 +18,13 @@ int main(void)
     fputs("Video subsystem running\n", stdout);
 
     size_t i;
+    vpu_puts("Video subsystem   : Running\n");
+    vpu_puts("VPU Backend       : ");
+    vpu_puts(vpu_backendinfostr());
+    vpu_puts("\n---------------------------------------------\n");
     for (i = 0; i < 50000; i++) {
-        //vpu_curssetpos(0, 0);
-        sprintf(str, "This is line number: %zu\n", i+1);
+        vpu_curshome();
+        sprintf(str, "Counter: %zu", i+1);
         vpu_puts(str);
         vpu_refresh(VPU_FORCEREFRESH_FALSE);
     }
