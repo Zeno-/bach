@@ -213,12 +213,16 @@ inittextsys(void)
 
     ok &= ( vpu_prv.txt.mem
             = calloc(ccount, sizeof (*vpu_prv.txt.mem)) ) != NULL;
-    ok &= ( vpu_prv.txt.colours
-            = calloc(ccount, sizeof *vpu_prv.txt.colours)) != NULL;
     ok &= ( vpu_prv.txt.attribs
             = calloc(ccount, sizeof *vpu_prv.txt.attribs)) != NULL;
 
-    if (!ok) {
+    ok &= ( vpu_prv.txt.colours
+            = malloc(ccount * sizeof *vpu_prv.txt.colours)) != NULL;
+
+    if (ok) {
+        memset(vpu_prv.txt.colours, DEFAULT_TEXTBG, vpu_prv.txt.cnum);
+    }
+    else {
         cleanuptextsys();
         return VPU_ERR_INITMEMFAIL;
     }

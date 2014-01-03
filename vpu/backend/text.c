@@ -6,6 +6,9 @@
 #include "private.h"
 #include "common/warn.h"
 
+inline static void restraincx(void);
+inline static void restraincy(void);
+
 void
 vpu_clrtext(void)
 {
@@ -54,8 +57,7 @@ vpu_scrolltexty(void)
 
     src  = TXTCHPOS(0, 1);
     dest = TXTCHPOS(0, 0);
-
-    memmove(dest, src, VPU_TL.cnum - VPU_TL.cols);
+    memmove(dest, src, (VPU_TL.cnum - VPU_TL.cols) * sizeof *src);
     memset(TXTCHPOS(0, VPU_TL.rows-1),
            0,
            VPU_TL.cols);
@@ -63,7 +65,7 @@ vpu_scrolltexty(void)
     /* Scroll colours */
     csrc = TXTCOLORPOS(0, 1);
     cdest = TXTCOLORPOS(0, 0);
-    memmove(cdest, csrc, VPU_TL.cnum - VPU_TL.cols);
+    memmove(cdest, csrc, (VPU_TL.cnum - VPU_TL.cols) * sizeof *csrc);
     memset(TXTCOLORPOS(0, VPU_TL.rows-1),
            VPU_TL.fgcolour,
            VPU_TL.cols);
@@ -72,14 +74,36 @@ vpu_scrolltexty(void)
 }
 
 void
+vpu_settextfg(uint32_t newcolour)
+{
+    VPU_TL.fgcolour = newcolour;
+}
+
+/**************************************************************************
+ * Characters and (simple) strings
+ *************************************************************************/
+
+void
 vpu_putchar(int ch)
 {
-    vpu_putcharat(ch, VPU_TL.cursx, VPU_TL.cursy);
+    vpu_putchar_c(ch, VPU_TL.fgcolour);
+}
+
+void
+vpu_putchar_c(int ch, uint32_t colour)
+{
+    vpu_putcharat_c(ch, VPU_TL.cursx, VPU_TL.cursy, colour);
     vpu_cursadvance();
 }
 
 void
 vpu_puts(const char *s)
+{
+    vpu_puts_c(s, VPU_TL.fgcolour);
+}
+
+void
+vpu_puts_c(const char *s, uint32_t colour)
 {
     int ch;
     while ((ch = *s++)) {
@@ -88,10 +112,10 @@ vpu_puts(const char *s)
                 vpu_cursnewline();
                 break;
             case '\t':
-                vpu_puttab();
+                vpu_puttab_c(colour);
                 break;
             default:
-                vpu_putchar(ch);
+                vpu_putchar_c(ch, colour);
                 break;
         }
     }
@@ -100,23 +124,49 @@ vpu_puts(const char *s)
 void
 vpu_puttab(void)
 {
+    vpu_puttab_c(VPU_TL.fgcolour);
+}
+
+void
+vpu_puttab_c(uint32_t colour)
+{
     int i;
     for (i = 0; i < TXTBUFF_TABWIDTH; i++) {
-        vpu_putchar(' ');
+        vpu_putchar_c(' ', colour);
     }
 }
 
 void
 vpu_putcharat(int ch, uint8_t x, uint8_t y)
 {
-    *TXTCHPOS(x, y) = ch;
+    vpu_putcharat_c(ch, x, y, VPU_TL.fgcolour);
 }
+
+void
+vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour)
+{
+    *TXTCHPOS(x, y) = ch;
+    *TXTCOLORPOS(x, y) = colour;
+}
+
+/**************************************************************************
+ * Cursor positioning
+ *************************************************************************/
 
 void
 vpu_curssetpos(uint8_t x, uint8_t y)
 {
     VPU_TL.cursx = x;
     VPU_TL.cursy = y;
+}
+
+void
+vpu_curssetposrel(int x, int y)
+{
+    VPU_TL.cursx += x;
+    VPU_TL.cursy += y;
+    restraincx();
+    restraincy();
 }
 
 void
@@ -143,4 +193,26 @@ vpu_cursnewline(void)
         if (VPU_TL.flags & VPU_TXTAUTOSCROLL)
             vpu_scrolltexty();
     }
+}
+
+/**************************************************************************
+ * Private
+ *************************************************************************/
+
+inline static void
+restraincx(void)
+{
+    if (VPU_TL.cursx < 0)
+        VPU_TL.cursx = 0;
+    else if (VPU_TL.cursx >= VPU_TL.cols)
+        VPU_TL.cursx = VPU_TL.cols - 1;
+}
+
+inline static void
+restraincy(void)
+{
+    if (VPU_TL.cursy < 0)
+        VPU_TL.cursy = 0;
+    if (VPU_TL.cursy >= VPU_TL.rows)
+        VPU_TL.cursy = VPU_TL.rows;
 }

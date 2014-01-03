@@ -13,7 +13,8 @@ static void blitglyph(int ch, uint32_t *dest,
 
 void vpu_refresh_tlayer(void)
 {
-    uint32_t fgcolour, bgcolour;
+    uint32_t bgcolour;
+    const uint32_t *fgcp;
     uint32_t *dest;
     uint8_t  *currchval;
     unsigned r, c, xdelta, ydelta;
@@ -32,14 +33,14 @@ void vpu_refresh_tlayer(void)
     nrows = VPU_TL.rows;
     ncols = VPU_TL.cols;
 
-    currchval = VPU_TL_MEM;
-
-    fgcolour = VPU_TL.fgcolour;
     bgcolour = VPU_TL.bgcolour;
+
+    currchval = VPU_TL_MEM;
+    fgcp = TXTCOLORPOS(0,0);
 
     for (r = 0; r < nrows; r++) {
         for (c = 0; c < ncols; c++) {
-            blitglyph(*currchval++, dest, fgcolour, bgcolour);
+            blitglyph(*currchval++, dest, *fgcp++, bgcolour);
             dest += xdelta;
         }
         dest += ydelta;

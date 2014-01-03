@@ -27,15 +27,21 @@ void vpu_settextlayerflags(uint16_t flags);
 
 void vpu_txtcls(void);
 void vpu_scrolltexty(void);
+
+void vpu_settextfg(uint32_t newcolour);
+
 void vpu_putchar(int ch);
 void vpu_puts(const char *s);
 void vpu_puttab(void);
-
 void vpu_putcharat(int ch, uint8_t x, uint8_t y);
 
-void vpu_chartoscreen(int ch, int x, int y);
+void vpu_putchar_c(int ch, uint32_t colour);
+void vpu_puts_c(const char *s, uint32_t colour);
+void vpu_puttab_c(uint32_t colour);
+void vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour);
 
 void vpu_curssetpos(uint8_t x, uint8_t y);
+void vpu_curssetposrel(int x, int y);
 void vpu_curshome(void);
 void vpu_cursadvance(void);
 void vpu_cursnewline(void);

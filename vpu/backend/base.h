@@ -34,7 +34,7 @@ struct txtlayer {
     uint32_t    fgcolour;       /* Default colour used for font fg */
     uint32_t    bgcolour;       /* Default colour used for font bg */
 
-    uint8_t     cursx, cursy;   /* Cursor position */
+    int         cursx, cursy;   /* Cursor position */
 
     uint32_t    origin;         /* Pixel offset for top-left cell(0,0) */
 };
