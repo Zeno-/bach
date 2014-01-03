@@ -17,6 +17,8 @@ int main(void)
 
     fputs("Video subsystem running\n", stdout);
 
+    vpu_settextlayerflags( vpu_textlayerflags() & ~VPU_TXTAUTOSCROLL);
+
     size_t i;
     vpu_puts("Video subsystem   : Running\n");
     vpu_puts("VPU Backend       : ");
@@ -24,10 +26,11 @@ int main(void)
     vpu_puts("\n---------------------------------------------\n");
     for (i = 0; i < 50000; i++) {
         vpu_curshome();
-        sprintf(str, "Counter: %zu", i+1);
+        sprintf(str, "Counter: %zu\n", i+1);
         vpu_puts(str);
         vpu_refresh(VPU_FORCEREFRESH_FALSE);
     }
+
     vpu_refresh(VPU_FORCEREFRESH_TRUE);
     sleep(2);
 

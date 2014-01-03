@@ -11,7 +11,9 @@ enum vpuerror {
 };
 
 enum vpu_txtlayerflags {
-    VPU_TXTAUTOSCROLL = (1 << 0)
+    VPU_TXTAUTOSCROLL   = (1 << 0),
+    VPU_TXTLAYERVISIBLE = (1 << 1),
+    VPU_TXTLAYEROVERLAY = (1 << 2)
 };
 
 enum {

@@ -205,7 +205,7 @@ inittextsys(void)
     unsigned ccount;
     unsigned ok = 1;
 
-    vpu_prv.txt.flags = VPU_TXTAUTOSCROLL;
+    vpu_prv.txt.flags = VPU_TXTAUTOSCROLL | VPU_TXTLAYERVISIBLE;
 
     setfixedfont(&vpu_prv, &DEFAULT_CHFONT);
 

@@ -12,7 +12,8 @@ vpu_clrtext(void)
     memset(VPU_TL_MEM, 0, VPU_PRV_INSTANCE.txt.cnum);
 }
 
-uint32_t *vpu_txtpixelorigin(uint8_t x, uint8_t y)
+uint32_t *
+vpu_txtpixelorigin(uint8_t x, uint8_t y)
 {
     uint32_t *pos;
     unsigned fontheight;
@@ -23,6 +24,26 @@ uint32_t *vpu_txtpixelorigin(uint8_t x, uint8_t y)
     pos += VPU_PRV_INSTANCE.w * y * fontheight + x * VPU_FIXED_FONT_WIDTH;
 
     return pos;
+}
+
+uint16_t
+vpu_textlayerflags(void)
+{
+    return VPU_TL.flags;
+}
+
+void
+vpu_settextlayerflags(uint16_t flags)
+{
+    VPU_TL.flags = flags;
+}
+
+void
+vpu_txtcls(void)
+{
+    memset(VPU_TL.mem, 0, VPU_TL.cnum);
+    memset(VPU_TL.colours, 0, VPU_TL.cnum);
+    memset(VPU_TL.attribs, 0, VPU_TL.cnum);
 }
 
 void

@@ -19,6 +19,9 @@ void vpu_refresh_tlayer(void)
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
 
+    if (!(VPU_TL.flags & VPU_TXTLAYERVISIBLE))
+        return;
+
     VPU_DIRECTPXWRITE_START();
 
     dest = VPU_PRV_PIXELS + VPU_TL.origin;
@@ -65,7 +68,7 @@ static void blitglyph(int ch, uint32_t *dest,
         for (i = 0; i < fontheight; i++) {
             if (*src & mask) {
                 *destrow = fgcolour;
-            } else {
+            } else if (!(VPU_TL.flags & VPU_TXTLAYEROVERLAY)) {
                 *destrow = bgcolour;
             }
             destrow += destdelta;

@@ -22,6 +22,10 @@
 
 uint32_t *vpu_txtpixelorigin(uint8_t x, uint8_t y);
 
+uint16_t vpu_textlayerflags(void);
+void vpu_settextlayerflags(uint16_t flags);
+
+void vpu_txtcls(void);
 void vpu_scrolltexty(void);
 void vpu_putchar(int ch);
 void vpu_puts(const char *s);
