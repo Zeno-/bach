@@ -79,10 +79,26 @@ vpu_scrolltexty(void)
            VPU_TL.cols);
 }
 
+/**************************************************************************
+ * Attributes and colours
+ *************************************************************************/
+
+uint32_t
+vpu_textfg(void)
+{
+    return VPU_TL.fgcolour;
+}
+
 void
 vpu_settextfg(uint32_t newcolour)
 {
     VPU_TL.fgcolour = newcolour;
+}
+
+uint32_t
+vpu_textattr(void)
+{
+    return VPU_TL.attrib;
 }
 
 void
