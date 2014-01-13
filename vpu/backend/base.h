@@ -56,7 +56,11 @@ struct display {
     void *pdata;                /* Private */
 };
 
-enum vpuerror vpu_init(unsigned w, unsigned h, int fullscreen);
+/* fullscreen: 0 = Windowed, 1 = fullscreen
+ * font: NULL = Use default
+ */
+enum vpuerror vpu_init(unsigned w, unsigned h, int fullscreen,
+                       const struct vidfont8 *font);
 void vpu_cleanup(void);
 
 const char * vpu_backendinfostr(void);

@@ -8,7 +8,8 @@ SOURCES += \
     vpu/backend/base.c \
     vpu/backend/text.c \
     vpu/fonts/bmfonts.c \
-    vpu/backend/render.c
+    vpu/backend/render.c \
+    genterrain.c
 
 HEADERS += \
     common/warn.h \

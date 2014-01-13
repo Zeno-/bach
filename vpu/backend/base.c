@@ -29,7 +29,7 @@ static void setbackendinfo(void);
 static void setfixedfont(struct display *screen,
                          const struct vidfont8 *font);
 
-static enum vpuerror inittextsys(void);
+static enum vpuerror inittextsys(const struct vidfont8 *font);
 static void cleanuptextsys(void);
 static void initfpstimer(int fpslimit);
 
@@ -38,7 +38,8 @@ static void initfpstimer(int fpslimit);
  *************************************************************************/
 
 enum vpuerror
-vpu_init(unsigned w, unsigned h, int fullscreen)
+vpu_init(unsigned w, unsigned h, int fullscreen,
+         const struct vidfont8 *font)
 {
     enum vpuerror err;
 
@@ -58,7 +59,7 @@ vpu_init(unsigned w, unsigned h, int fullscreen)
 
     initfpstimer(VPU_FPSLIMIT);
 
-    if ((err = inittextsys() != VPU_ERR_NONE))
+    if ((err = inittextsys(font) != VPU_ERR_NONE))
         return err;
 
     setbackendinfo();
@@ -206,14 +207,14 @@ setfixedfont(struct display *screen, const struct vidfont8 *font)
 }
 
 static enum vpuerror
-inittextsys(void)
+inittextsys(const struct vidfont8 *font)
 {
     unsigned ccount;
     unsigned ok = 1;
 
     vpu_prv.txt.flags = VPU_TXTAUTOSCROLL | VPU_TXTLAYERVISIBLE;
 
-    setfixedfont(&vpu_prv, &DEFAULT_CHFONT);
+    setfixedfont(&vpu_prv, font != NULL ? font : &DEFAULT_CHFONT);
 
     ccount = vpu_prv.txt.cnum;
 
