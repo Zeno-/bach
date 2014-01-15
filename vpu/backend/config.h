@@ -14,7 +14,7 @@
 
 #define DEFAULT_PROGNAME    "Hodor, hodor, hodor"
 
-#define VPU_BUILD_BACKENDTEST1
-//#define VPU_BUILD_BACKENDTEST2
+#define VPU_BUILD_BACKENDTEST1 0
+#define VPU_BUILD_BACKENDTEST2 1
 
 #endif /* VPU_BACKENDCONFIG_H */
