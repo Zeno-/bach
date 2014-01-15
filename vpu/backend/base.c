@@ -218,6 +218,8 @@ inittextsys(const struct vidfont8 *font)
 
     ccount = vpu_prv.txt.cnum;
 
+    /* TODO: Implement these as one contiguous array */
+
     ok &= ( vpu_prv.txt.mem
             = calloc(ccount, sizeof (*vpu_prv.txt.mem)) ) != NULL;
     ok &= ( vpu_prv.txt.attribs
@@ -243,14 +245,15 @@ inittextsys(const struct vidfont8 *font)
 static void
 cleanuptextsys(void)
 {
-    free(vpu_prv.txt.mem);
-    free(vpu_prv.txt.bgcolours);
     free(vpu_prv.txt.colours);
+    free(vpu_prv.txt.bgcolours);
     free(vpu_prv.txt.attribs);
+    free(vpu_prv.txt.mem);
 
-    vpu_prv.txt.mem = NULL;
-    vpu_prv.txt.colours = NULL;
-    vpu_prv.txt.attribs = NULL;
+    vpu_prv.txt.colours   = NULL;
+    vpu_prv.txt.bgcolours = NULL;
+    vpu_prv.txt.attribs   = NULL;
+    vpu_prv.txt.mem       = NULL;
 }
 
 static void
