@@ -12,7 +12,7 @@
 
 #define VPU_FPSLIMIT        60
 
-#define DEFAULT_PROGNAME    "Hodor, hodor, hodor"
+#define DEFAULT_PROGNAME    "VPU Display"
 
 #define VPU_BUILD_BACKENDTEST1 0
 #define VPU_BUILD_BACKENDTEST2 1

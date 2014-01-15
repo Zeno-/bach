@@ -14,10 +14,19 @@
 #include "vpu/fonts/bmfonts.h"
 
 #define OUTPUTCOLOURED      1
-#define OUTPUTSMOOTHEDNOISE 1
+#define OUTPUTSMOOTHEDNOISE 0
+
+/* Round 'n' down to 'd' */
+#define INTCLAMPTO(n,d) ( ((int)((double)(n) / (d))) * (d) )
 
 static void show(double *a, int w, int h);
 static void genterrainmap(void);
+static double *genperlinnoise(int w, int h, int octaves);
+static double *genrandarr(int w, int h);
+static double *gensmoothnoise(double *a, int w, int h,
+                              double *basenoise, unsigned octave);
+static void show(double *a, int w, int h);
+static double interpolate(double x0, double x1, double alpha);
 
 int main(int argc, char **argv)
 {
@@ -26,25 +35,102 @@ int main(int argc, char **argv)
     (void)argv; /* UNUSED */
 #endif
 
+    int i;
+
     if (vpu_init(1024, 768, 0, &vidfont8x8)
             != VPU_ERR_NONE) {
         fputs("Could not init VPU\n", stderr);
         exit(1);
     }
 
-    //srand(time(NULL));
+    srand(time(NULL));
 
-    genterrainmap();
-
-    //sleep(2);
+    for (i = 0; i < 10; i++) {
+        genterrainmap();
+        sleep(1);
+    }
     //getchar();
 
     return 0;
 }
 
 
+static void
+genterrainmap(void)
+{
+    struct display *scr;
+    int w, h;
 
-static double *genrandarr(int w, int h)
+    double *pnoise;
+
+    scr = vpu_getinstance();
+    w = scr->txt.cols;
+    h = scr->txt.rows;
+
+    pnoise = genperlinnoise(w, h, 7);
+    show(pnoise, w, h);
+    free(pnoise);
+}
+
+static double *
+genperlinnoise(int w, int h, int octaves)
+{
+    const double persistance    = 0.7;
+
+    int i, j, oct;
+    int arrsize;
+    double amplitude            = 1.0;
+    double totalAmplitude       = 0.0;
+
+    double *bnoise, *snoise, *pnoise;
+
+    arrsize = w * h;
+
+    bnoise = genrandarr(w, h);  /* "base" noise */
+
+    if ( (snoise = malloc(arrsize * sizeof *snoise)) == NULL) {
+        perror("malloc() failed for smoothnoise");
+        exit(1);
+    }
+
+    if ( (pnoise = calloc(arrsize, sizeof *pnoise)) == NULL) {
+        perror("malloc() failed for perlinnoise");
+        exit(1);
+    }
+
+    /* Combine smooth noise */
+    for (oct = octaves - 1; oct >= 0; oct--)
+    {
+        gensmoothnoise(snoise, w, h, bnoise, oct);
+        for (i = 0; i < w; i++) {
+            for (j = 0; j < h; j++) {
+                *(pnoise + i + j * w) +=
+                        *(snoise + i + j * w) * amplitude;
+            }
+        }
+        totalAmplitude += amplitude;
+        amplitude *= persistance;
+    }
+
+    /* TODO: Incorporate normalization into the above loop */
+
+    /* Normalise */
+    for (i = 0; i < w; i++) {
+        for (j = 0; j < h; j++) {
+            *(pnoise + i + j * w) /= totalAmplitude;
+            /* if (*(perlinNoise + i + j * w) > 1)
+                printf("%lf\n", *(perlinNoise + i + j * w) ); */
+        }
+    }
+
+    free(snoise);
+    free(bnoise);
+
+    return pnoise;
+}
+
+static double *
+genrandarr(int w, int h)
 {
     double *ra;
     int i, n;
@@ -61,36 +147,34 @@ static double *genrandarr(int w, int h)
     return ra;
 }
 
-static double interpolate(double x0, double x1, double alpha)
-{
-    return x0 * (1.0 - alpha) + alpha * x1;
-}
-
-static double *gensmoothnoise(double *a, int w, int h, double *basenoise, unsigned oct)
+static double *
+gensmoothnoise(double *a, int w, int h, double *basenoise, unsigned octave)
 {
     int i, j;
 
-    unsigned long sampleperiod;
-    double samplefreq;
+    unsigned long period;
+    double freq;
+    int sample_i0, sample_i1, sample_j0, sample_j1;
+    double hblend, vblend, top, bottom;
 
-    sampleperiod = 1 << oct;
-    samplefreq = 1.0 / sampleperiod;
+    period = 1 << octave;
+    freq = 1.0 / period;
 
     for (i = 0; i < w; i++) {
-        int sample_i0 = (int)(((double)i / sampleperiod)) * sampleperiod;
-        int sample_i1 = (sample_i0 + sampleperiod) % w;
-        double hblend = (i - sample_i0) * samplefreq;
+        sample_i0 = INTCLAMPTO(i, period);
+        sample_i1 = (sample_i0 + period) % w;
+        hblend = (i - sample_i0) * freq;
         for (j = 0; j < h; j++) {
-            int sample_j0 = (int)(((double)j / sampleperiod)) * sampleperiod;
-            int sample_j1 = (sample_j0 + sampleperiod) % h;
-            double vblend = (j - sample_j0) * samplefreq;
+            sample_j0 = INTCLAMPTO(j, period);
+            sample_j1 = (sample_j0 + period) % h;
+            vblend = (j - sample_j0) * freq;
 
-            double top = interpolate(*(basenoise + sample_i0 + sample_j0 * w),
-                                     *(basenoise + sample_i1 + sample_j0 * w),
-                                     hblend);
-            double bottom = interpolate(*(basenoise + sample_i0 + sample_j1 * w),
-                                       *(basenoise + sample_i1 + sample_j1 * w),
-                                       hblend);
+            top = interpolate(*(basenoise + sample_i0 + sample_j0 * w),
+                              *(basenoise + sample_i1 + sample_j0 * w),
+                              hblend);
+            bottom = interpolate(*(basenoise + sample_i0 + sample_j1 * w),
+                                 *(basenoise + sample_i1 + sample_j1 * w),
+                                 hblend);
 
             *(a + i + j * w) = interpolate(top, bottom, vblend);
         }
@@ -104,57 +188,8 @@ static double *gensmoothnoise(double *a, int w, int h, double *basenoise, unsign
     return a;
 }
 
-static double *GeneratePerlinNoise(int w, int h, double *basenoise, int octaveCount)
-{
-
-    int i, j, oct, n;
-    double persistance = .7;
-    double *smoothNoise;
-    double *perlinNoise;
-
-    n = w * h;
-
-    if ( (smoothNoise = malloc(n * sizeof *smoothNoise)) == NULL) {
-        perror("genrandr()");
-        exit(1);
-    }
-
-    if ( (perlinNoise = calloc(n, sizeof *perlinNoise)) == NULL) {
-        perror("genrandr()");
-        exit(1);
-    }
-
-    double amplitude = 1.0;
-    double totalAmplitude = 0.0;
-
-    //generate smooth noise
-    for (oct = octaveCount - 1; oct >= 0; oct--)
-    {
-        amplitude *= persistance;
-        totalAmplitude += amplitude;
-        gensmoothnoise(smoothNoise, w, h, basenoise, oct);
-        for (i = 0; i < w; i++) {
-            for (j = 0; j < h; j++) {
-                *(perlinNoise + i + j * w) += *(smoothNoise + i + j * w) * amplitude;
-            }
-        }
-    }
-
-    //normalisation
-    for (i = 0; i < w; i++) {
-        for (j = 0; j < h; j++) {
-            *(perlinNoise + i + j * w) /= totalAmplitude;
-            if (*(perlinNoise + i + j * w) > 1)
-                printf("%lf\n", *(perlinNoise + i + j * w) );
-        }
-    }
-
-    free (smoothNoise);
-
-    return perlinNoise;
-}
-
-static void show(double *a, int w, int h)
+static void
+show(double *a, int w, int h)
 {
     int r, c, i;
     uint32_t colour;
@@ -166,27 +201,35 @@ static void show(double *a, int w, int h)
     for (r = 0; r < h; r++) {
         for (c = 0; c < w; c++) {
 #if OUTPUTCOLOURED == 1
-            if (a[i] < 132/255.0) {
-                if (a[i] > 125/255.0) {
-                    vpu_settextbg(0x00ffffff);
+            if (a[i] < 132 / 255.0) {
+                if (a[i] > 125 / 255.0) {
+                    vpu_settextbg(0x00606060);
                     ch =  '.';
-                    colour = vpu_rgbto32(a[i]*255*0.90, a[i]*255*0.90, a[i]*255/1.5);
+                    colour = vpu_rgbto32(a[i] * 255 * 0.95,
+                                         a[i] * 255,
+                                         a[i] * 255 * 0.20);
                 } else {
-                    vpu_settextbg(0x0000000);
+                    vpu_settextbg(0x00000000);
                     ch =  ' ';
-                    colour = vpu_rgbto32(0, a[i]*.25*255, a[i]*255);
+                    colour = vpu_rgbto32(0,
+                                         a[i] * 255 * 0.25,
+                                         a[i] * 255);
                 }
-            } else if (a[i] < 135/255.0) {
-                vpu_settextbg(0x00);
-                colour = vpu_rgbto32(0, a[i]*255, 0);
-                ch = ' ';
+            } else if (a[i] < 135 / 255.0) {
+                vpu_settextbg(0x00000000);
+                colour = vpu_rgbto32(0,
+                                     a[i] * 255,
+                                     0);
+                ch = '\'';
             } else {
-                vpu_settextbg(0x00);
-                colour = vpu_rgbto32(a[i]*0.95, a[i]*255, 0);
-                ch = '^';
+                vpu_settextbg(0x00000000);
+                colour = vpu_rgbto32(0,
+                                     a[i] * 255,
+                                     0);
+                ch = '"';
             }
 #else
-            colour = vpu_rgbto32(a[i]*255, a[i]*255, a[i]*255);
+            colour = vpu_rgbto32(a[i] * 255, a[i] * 255, a[i] * 255);
             ch = ' ';
 #endif
             i++;
@@ -197,25 +240,11 @@ static void show(double *a, int w, int h)
     vpu_refresh(VPU_REFRESH_FORCE);
 }
 
-static void genterrainmap(void)
+
+inline static double
+interpolate(double x0, double x1, double alpha)
 {
-    struct display *scr;
-    int w, h;
-
-    double *basenoise, *pnoise;
-
-    scr = vpu_getinstance();
-    w = scr->txt.cols;
-    h = scr->txt.rows;
-
-    basenoise = genrandarr(w, h);
-    pnoise = GeneratePerlinNoise(w, h, basenoise, 8);
-
-    show(pnoise, w, h);
-    sleep(2);
-
-    free(basenoise);
-    free(pnoise);
+    return x0 * (1.0 - alpha) + alpha * x1;
 }
 
 #endif /* VPU_BUILD_BACKENDTEST2 */
