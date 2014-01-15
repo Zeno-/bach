@@ -17,6 +17,12 @@
         + (x) + (y) * VPU_TL.cols \
     )
 
+#define TXTBGCOLORPOS(x, y) \
+    ( \
+        VPU_TL_BGCOLORMEM \
+        + (x) + (y) * VPU_TL.cols \
+    )
+
 #define TXTATTRPOS(x, y) \
     ( \
         VPU_TL_ATTRMEM \
@@ -33,6 +39,7 @@ void        vpu_scrolltexty(void);
 
 uint32_t    vpu_textfg(void);
 void        vpu_settextfg(uint32_t newcolour);
+void        vpu_settextbg(uint32_t newcolour);
 uint8_t     vpu_textattr(void);
 void        vpu_settextattr(uint8_t attr);
 

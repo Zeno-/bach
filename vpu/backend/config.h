@@ -12,6 +12,9 @@
 
 #define VPU_FPSLIMIT        60
 
-#define DEFAULT_PROGNAME    "Zeno Software Central Processing Unit"
+#define DEFAULT_PROGNAME    "Hodor, hodor, hodor"
+
+#define VPU_BUILD_BACKENDTEST1
+//#define VPU_BUILD_BACKENDTEST2
 
 #endif /* VPU_BACKENDCONFIG_H */

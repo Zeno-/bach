@@ -34,6 +34,7 @@ struct txtlayer {
     uint8_t     *mem;           /* Character memory */
 
     uint32_t    *colours;
+    uint32_t    *bgcolours;
     uint8_t     *attribs;
 
     uint32_t    fgcolour;       /* Default colour used for font fg */

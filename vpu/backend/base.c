@@ -226,6 +226,9 @@ inittextsys(const struct vidfont8 *font)
     ok &= ( vpu_prv.txt.colours
             = malloc(ccount * sizeof *vpu_prv.txt.colours)) != NULL;
 
+    ok &= ( vpu_prv.txt.bgcolours
+            = malloc(ccount * sizeof *vpu_prv.txt.bgcolours)) != NULL;
+
     if (ok) {
         memset(vpu_prv.txt.colours, DEFAULT_TEXTBG, vpu_prv.txt.cnum);
     }
@@ -241,6 +244,7 @@ static void
 cleanuptextsys(void)
 {
     free(vpu_prv.txt.mem);
+    free(vpu_prv.txt.bgcolours);
     free(vpu_prv.txt.colours);
     free(vpu_prv.txt.attribs);
 

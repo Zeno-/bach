@@ -70,6 +70,14 @@ vpu_scrolltexty(void)
            VPU_TL.fgcolour,
            VPU_TL.cols);
 
+    /* Scroll background colours */
+    csrc = TXTBGCOLORPOS(0, 1);
+    cdest = TXTBGCOLORPOS(0, 0);
+    memmove(cdest, csrc, (VPU_TL.cnum - VPU_TL.cols) * sizeof *csrc);
+    memset(TXTBGCOLORPOS(0, VPU_TL.rows-1),
+           VPU_TL.bgcolour,
+           VPU_TL.cols);
+
     /* Scroll Attribs */
     src  = TXTATTRPOS(0, 1);
     dest = TXTATTRPOS(0, 0);
@@ -93,6 +101,12 @@ void
 vpu_settextfg(uint32_t newcolour)
 {
     VPU_TL.fgcolour = newcolour;
+}
+
+void
+vpu_settextbg(uint32_t newcolour)
+{
+    VPU_TL.bgcolour = newcolour;
 }
 
 uint8_t
@@ -175,6 +189,7 @@ vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour)
 {
     *TXTCHPOS(x, y) = ch;
     *TXTCOLORPOS(x, y) = colour;
+    *TXTBGCOLORPOS(x, y) = VPU_TL.bgcolour;
     *TXTATTRPOS(x, y) = VPU_TL.attrib;
 }
 

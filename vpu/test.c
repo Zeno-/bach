@@ -1,3 +1,5 @@
+#include "vpu/backend/config.h"
+
 #ifdef VPU_BUILD_BACKENDTEST1
 
 #include <stdlib.h>
