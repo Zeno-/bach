@@ -11,7 +11,7 @@
 #include "config.h"
 #include "render.h"
 
-#define MAX_BACKENDSTRLEN 128
+#define MAX_VERSIONINFO_LEN 128
 
 struct fpsctx {
     uint32_t prevtick;
@@ -21,7 +21,7 @@ struct fpsctx {
 struct display vpu_prv;
 struct display_privdata vpu_pdata_prv;
 static struct fpsctx fpstimer;
-static char backendstr[MAX_BACKENDSTRLEN];
+static char backendstr[MAX_VERSIONINFO_LEN];
 
 static enum vpuerror initsys(void);
 static enum vpuerror initscr(unsigned w, unsigned h, int fullscreen);
@@ -126,7 +126,7 @@ vpu_clrdisplay(void)
     SDL_Surface *surface = VID_PRV_SURFACE;
 
     // FIXME: the background colour should be modifiable
-    SDL_FillRect(surface, NULL, DEFAULT_BGCOLOUR);
+    SDL_FillRect(surface, NULL, VGFX_DEF_BGCOLOUR);
 }
 
 uint32_t
@@ -169,8 +169,8 @@ initscr(unsigned w, unsigned h, int fullscreen)
 
     vpu_prv.w = w;
     vpu_prv.h = h;
-    vpu_prv.txt.fgcolour = DEFAULT_TEXTFG;
-    vpu_prv.txt.bgcolour = DEFAULT_TEXTBG;
+    vpu_prv.txt.fgcolour = VTXT_DEF_FGCOLOUR;
+    vpu_prv.txt.bgcolour = VTXT_DEF_BGCOLOUR;
     vpu_prv.txt.attrib   = 0;
 
     return VPU_ERR_NONE;
@@ -184,7 +184,7 @@ setbackendinfo(void)
 
     SDL_VERSION(&compiled);
 
-    snprintf(backendstr, MAX_BACKENDSTRLEN,
+    snprintf(backendstr, MAX_VERSIONINFO_LEN,
              "Backend using SDL %u.%u.%u",
              compiled.major, compiled.minor, compiled.patch);
 }
@@ -212,13 +212,13 @@ inittextsys(const struct vidfont8 *font)
     unsigned ccount;
     unsigned ok = 1;
 
-    vpu_prv.txt.flags = VPU_TXTAUTOSCROLL | VPU_TXTLAYERVISIBLE;
+    vpu_prv.txt.flags = VTXT_DEF_TEXTFLAGS;
 
     setfixedfont(&vpu_prv, font != NULL ? font : &DEFAULT_CHFONT);
 
     ccount = vpu_prv.txt.cnum;
 
-    /* TODO: Implement these as one contiguous array */
+    /* TODO: Implement these as one contiguous array. */
 
     ok &= ( vpu_prv.txt.mem
             = calloc(ccount, sizeof (*vpu_prv.txt.mem)) ) != NULL;
@@ -232,7 +232,7 @@ inittextsys(const struct vidfont8 *font)
             = malloc(ccount * sizeof *vpu_prv.txt.bgcolours)) != NULL;
 
     if (ok) {
-        memset(vpu_prv.txt.colours, DEFAULT_TEXTBG, vpu_prv.txt.cnum);
+        memset(vpu_prv.txt.colours, VTXT_DEF_FGCOLOUR, vpu_prv.txt.cnum);
     }
     else {
         cleanuptextsys();
