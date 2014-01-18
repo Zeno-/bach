@@ -15,10 +15,8 @@
 
 int main(int argc, char **argv)
 {
-#if !defined _WIN32
     (void)argc; /* UNUSED */
     (void)argv; /* UNUSED */
-#endif
 
     if (vpu_init(SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0, NULL)
             != VPU_ERR_NONE) {

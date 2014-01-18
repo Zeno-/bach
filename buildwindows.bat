@@ -1,5 +1,3 @@
-:: Thanks to RangerMauve (from irc freenode) for compiling on 
-:: Windows, testing that it works on that platform and  giving
-:: me hints
+:: Thanks to RangerMauve (from irc freenode) for initial version
 
-gcc -o zenocpu.exe -I. vpu/tests/test.c vpu/tests/genterrain.c vpu/backend/base.c vpu/backend/render.c vpu/backend/text.c vpu/fonts/bmfonts.c -lmingw32 -lSDLmain -lSDL
+gcc -o zenocpu.exe -I. -IJ:/SDL-1.2.15/include vpu/tests/test.c vpu/tests/genterrain.c vpu/backend/base.c vpu/backend/render.c vpu/backend/text.c vpu/fonts/bmfonts.c -lmingw32 -lSDLmain -lSDL

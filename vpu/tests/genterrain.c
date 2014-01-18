@@ -30,10 +30,8 @@ static double interpolate(double x0, double x1, double alpha);
 
 int main(int argc, char **argv)
 {
-#if !defined _WIN32
     (void)argc; /* UNUSED */
     (void)argv; /* UNUSED */
-#endif
 
     int i;
 
