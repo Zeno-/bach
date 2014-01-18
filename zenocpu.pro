@@ -10,6 +10,7 @@ SOURCES += \
     vpu/backend/render.c \
     vpu/tests/genterrain.c \
     vpu/tests/test.c \
+    timer/timer.c
 
 HEADERS += \
     common/warn.h \
@@ -19,7 +20,8 @@ HEADERS += \
     vpu/backend/private.h \
     vpu/backend/text.h \
     vpu/fonts/bmfonts.h \
-    vpu/backend/render.h
+    vpu/backend/render.h \
+    timer/timer.h
 
 LIBS += -lSDL
 
