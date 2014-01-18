@@ -16,11 +16,12 @@ CFLAGS += -I. -Icommon -Ivpu/backend -Ivpu/fonts $(INCLUDES) \
 	  -DPROGNAME=\"$(PROGNAME)\"
 
 OBJECTS := \
-	vpu/test.o		\
 	vpu/backend/base.o	\
 	vpu/backend/render.o	\
 	vpu/backend/text.o	\
-	vpu/fonts/bmfonts.o
+	vpu/fonts/bmfonts.o	\
+	vpu/tests/test.o	\
+	vpu/tests/genterrain.o
 
 .c.o:
 	$(CC) -o $@ -c $(CFLAGS) $<
