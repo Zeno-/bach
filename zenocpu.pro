@@ -9,8 +9,9 @@ SOURCES += \
     vpu/fonts/bmfonts.c \
     vpu/backend/render.c \
     vpu/tests/genterrain.c \
-    vpu/tests/test.c \
-    timer/timer.c
+    timer/timer.c \
+    vpu/tests/basiccolours.c \
+    vpu/tests/scroll.c
 
 HEADERS += \
     common/warn.h \

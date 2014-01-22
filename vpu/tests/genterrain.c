@@ -1,6 +1,6 @@
 #include "vpu/backend/config.h"
 
-#if VPU_BUILD_BACKENDTEST2 == 1
+#if VPU_BUILDTESTS == 1 && VPU_BUILDTEST_TERRAIN == 1
 
 #include <stdlib.h>
 #include <stdio.h>

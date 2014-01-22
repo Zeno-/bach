@@ -16,7 +16,13 @@
 
 #define DEFAULT_PROGNAME    "VPU Display"
 
-#define VPU_BUILD_BACKENDTEST1 0
-#define VPU_BUILD_BACKENDTEST2 1
+/* 0 = Build no tests
+ * 1 = Build test as defined by VPU_BUILDTEST_*
+ */
+#define VPU_BUILDTESTS              1
+
+#define VPU_BUILDTEST_BASICCOLOURS  0
+#define VPU_BUILDTEST_SCROLL        1
+#define VPU_BUILDTEST_TERRAIN       0
 
 #endif /* VPU_BACKENDCONFIG_H */
