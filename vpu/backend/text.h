@@ -13,7 +13,7 @@
     )
 #define TXTCOLORPOS(x, y) \
     ( \
-        VPU_TL_COLORMEM \
+        VPU_TL_FGCOLORMEM \
         + (x) + (y) * VPU_TL.cols \
     )
 

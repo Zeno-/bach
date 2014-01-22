@@ -129,6 +129,18 @@ vpu_clrdisplay(void)
     SDL_FillRect(surface, NULL, VGFX_DEF_BGCOLOUR);
 }
 
+void
+vpu_clrtext(void)
+{
+    memset(VPU_TL.charmem, 0, VPU_TL.charmem_sz);
+    memset(VPU_TL_FGCOLORMEM, VPU_TL.fgcolour,
+                              sizeof VPU_TL.fgcolour * VPU_TL.cnum);
+    memset(VPU_TL_BGCOLORMEM, VPU_TL.bgcolour,
+                              sizeof VPU_TL.bgcolour * VPU_TL.cnum);
+    memset(VPU_TL_ATTRMEM, VPU_TL.attrib,
+                           sizeof VPU_TL.attrib * VPU_TL.cnum);
+}
+
 uint32_t
 vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b)
 {
@@ -197,7 +209,10 @@ setfixedfont(struct display *screen, const struct vidfont8 *font)
     screen->fixedfont = font;
     screen->txt.cols = screen->w / VPU_FIXED_FONT_WIDTH;
     screen->txt.rows = screen->h / screen->fixedfont->height;
-    screen->txt.cnum = screen->txt.cols * screen->txt.rows;
+    screen->txt.charmem_sz = screen->txt.cols * screen->txt.rows;
+    screen->txt.cnum = screen->txt.charmem_sz;
+    screen->txt.params_sz = screen->txt.cnum * 3;
+
     /* Centre text "window" on screen; i.e. dertemine upper-left pixel of
      * the text display
      */
@@ -209,30 +224,41 @@ setfixedfont(struct display *screen, const struct vidfont8 *font)
 static enum vpuerror
 inittextsys(const struct vidfont8 *font)
 {
-    unsigned ccount;
-    unsigned ok = 1;
+    size_t ccount, pmemreq;
+    unsigned ok;
 
     vpu_prv.txt.flags = VTXT_DEF_TEXTFLAGS;
 
     setfixedfont(&vpu_prv, font != NULL ? font : &DEFAULT_CHFONT);
 
-    ccount = vpu_prv.txt.cnum;
+    ccount  = vpu_prv.txt.charmem_sz;
+    pmemreq = vpu_prv.txt.params_sz * sizeof *vpu_prv.txt.params;
 
-    /* TODO: Implement these as one contiguous array. */
+    /*****************************************************
+     *
+     *              PARAMS MEM LAYOUT
+     *
+     *      Each segment text rows * text cols in size
+     *
+     *      +---------------------------------------+
+     *      +           Foreground colours          +   32 bit
+     *      +---------------------------------------+
+     *      +           Background colours          +   32 bit
+     *      +---------------------------------------+
+     *      +           Reserved & Attribs          +   32 bit[1]
+     *      +---------------------------------------+
+     *
+     *  [1] Reserved & Attribs,
+     *          Upper 24-bits:  reserved
+     *          Lower 8-bits:   attribute flags
+     */
 
-    ok &= ( vpu_prv.txt.mem
-            = calloc(ccount, sizeof (*vpu_prv.txt.mem)) ) != NULL;
-    ok &= ( vpu_prv.txt.attribs
-            = calloc(ccount, sizeof *vpu_prv.txt.attribs)) != NULL;
-
-    ok &= ( vpu_prv.txt.colours
-            = malloc(ccount * sizeof *vpu_prv.txt.colours)) != NULL;
-
-    ok &= ( vpu_prv.txt.bgcolours
-            = malloc(ccount * sizeof *vpu_prv.txt.bgcolours)) != NULL;
+    ok  = ( vpu_prv.txt.charmem
+            = calloc(ccount, sizeof *vpu_prv.txt.charmem) ) != NULL;
+    ok &= ( vpu_prv.txt.params = malloc(pmemreq) ) != NULL;
 
     if (ok) {
-        memset(vpu_prv.txt.colours, VTXT_DEF_FGCOLOUR, vpu_prv.txt.cnum);
+        vpu_clrtext();
     }
     else {
         cleanuptextsys();
@@ -245,15 +271,11 @@ inittextsys(const struct vidfont8 *font)
 static void
 cleanuptextsys(void)
 {
-    free(vpu_prv.txt.colours);
-    free(vpu_prv.txt.bgcolours);
-    free(vpu_prv.txt.attribs);
-    free(vpu_prv.txt.mem);
+    free(vpu_prv.txt.params);
+    free(vpu_prv.txt.charmem);
 
-    vpu_prv.txt.colours   = NULL;
-    vpu_prv.txt.bgcolours = NULL;
-    vpu_prv.txt.attribs   = NULL;
-    vpu_prv.txt.mem       = NULL;
+    vpu_prv.txt.params    = NULL;
+    vpu_prv.txt.charmem   = NULL;
 }
 
 static void

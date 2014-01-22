@@ -9,15 +9,13 @@
 #include "text.h"
 
 static void blitglyph(int ch, uint32_t *dest,
-                      uint32_t fgcolour, uint32_t bgcolour, uint8_t attr);
+                      uint32_t fgcolour, uint32_t bgcolour, uint32_t attr);
 
 void vpu_refresh_tlayer(void)
 {
     uint32_t *dest;
-    const uint32_t *fgcp, *bgcp;
-    uint8_t *atrp;
-
-    uint8_t  *currchval;
+    const uint8_t  *currchval;
+    const uint32_t *fgcp, *bgcp, *atrp;
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
 
@@ -51,7 +49,7 @@ void vpu_refresh_tlayer(void)
 }
 
 static void blitglyph(int ch, uint32_t *dest,
-                      uint32_t fgcolour, uint32_t bgcolour, uint8_t attr)
+                      uint32_t fgcolour, uint32_t bgcolour, uint32_t attr)
 {
     unsigned fontheight, mask;
     const unsigned char *glyph;

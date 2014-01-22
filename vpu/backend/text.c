@@ -9,12 +9,6 @@
 inline static void restraincx(void);
 inline static void restraincy(void);
 
-void
-vpu_clrtext(void)
-{
-    memset(VPU_TL_MEM, 0, VPU_PRV_INSTANCE.txt.cnum);
-}
-
 uint32_t *
 vpu_txtpixelorigin(uint8_t x, uint8_t y)
 {
@@ -44,9 +38,8 @@ vpu_settextlayerflags(uint16_t flags)
 void
 vpu_txtcls(void)
 {
-    memset(VPU_TL.mem, 0, VPU_TL.cnum);
-    memset(VPU_TL.colours, 0, VPU_TL.cnum);
-    memset(VPU_TL.attribs, 0, VPU_TL.cnum);
+    vpu_clrtext();
+    vpu_curshome();
 }
 
 void
@@ -57,34 +50,15 @@ vpu_scrolltexty(void)
 
     src  = TXTCHPOS(0, 1);
     dest = TXTCHPOS(0, 0);
-    memmove(dest, src, (VPU_TL.cnum - VPU_TL.cols) * sizeof *src);
-    memset(TXTCHPOS(0, VPU_TL.rows-1),
-           0,
-           VPU_TL.cols);
+    memmove(dest, src, (VPU_TL.charmem_sz - VPU_TL.cols) * sizeof *src);
+    memset(TXTCHPOS(0, VPU_TL.rows-1), 0, VPU_TL.cols);
 
-    /* Scroll colours */
-    csrc = TXTCOLORPOS(0, 1);
-    cdest = TXTCOLORPOS(0, 0);
-    memmove(cdest, csrc, (VPU_TL.cnum - VPU_TL.cols) * sizeof *csrc);
-    memset(TXTCOLORPOS(0, VPU_TL.rows-1),
-           VPU_TL.fgcolour,
-           VPU_TL.cols);
-
-    /* Scroll background colours */
-    csrc = TXTBGCOLORPOS(0, 1);
-    cdest = TXTBGCOLORPOS(0, 0);
-    memmove(cdest, csrc, (VPU_TL.cnum - VPU_TL.cols) * sizeof *csrc);
-    memset(TXTBGCOLORPOS(0, VPU_TL.rows-1),
-           VPU_TL.bgcolour,
-           VPU_TL.cols);
-
-    /* Scroll Attribs */
-    src  = TXTATTRPOS(0, 1);
-    dest = TXTATTRPOS(0, 0);
-    memmove(dest, src, (VPU_TL.cnum - VPU_TL.cols) * sizeof *src);
-    memset(TXTATTRPOS(0, VPU_TL.rows-1),
-           0,
-           VPU_TL.cols);
+    cdest = VPU_TL_PARAMSMEM;
+    csrc  = VPU_TL_PARAMSMEM + VPU_TL.cols;
+    memmove(cdest, csrc, (VPU_TL.params_sz - VPU_TL.cols) * sizeof *csrc);
+    memset(TXTCOLORPOS(0, VPU_TL.rows-1), VPU_TL.fgcolour, VPU_TL.cols);
+    memset(TXTBGCOLORPOS(0, VPU_TL.rows-1), VPU_TL.bgcolour, VPU_TL.cols);
+    memset(TXTATTRPOS(0, VPU_TL.rows-1), VPU_TL.attrib, VPU_TL.cols);
 }
 
 /**************************************************************************

@@ -36,7 +36,6 @@ int main(int argc, char **argv)
     /* Ensure text auto scroll flag is set */
     vpu_settextlayerflags( vpu_textlayerflags() | VPU_TXTAUTOSCROLL);
 
-
     vpu_puts("Video subsystem   : Running\n");
     vpu_settextfg(vpu_rgbto32(0xa0, 0xa0, 0));
     vpu_puts("VPU Backend       : ");
@@ -45,7 +44,7 @@ int main(int argc, char **argv)
 
     vpu_settextattr(VPU_TXTATTRIB_REVERSE);
 
-    for (i = 0; i < 500000; i++) {
+    for (i = 0; i < 50000; i++) {
         fgcolour = i & 1 ? VTXT_DEF_FGCOLOUR : altcolour;
 
         //vpu_curshome();

@@ -8,10 +8,10 @@ SOURCES += \
     vpu/backend/text.c \
     vpu/fonts/bmfonts.c \
     vpu/backend/render.c \
-    vpu/tests/genterrain.c \
     timer/timer.c \
-    vpu/tests/basiccolours.c \
-    vpu/tests/scroll.c
+    vpu/tests/test_basiccolours.c \
+    vpu/tests/test_scroll.c \
+    vpu/tests/test_genterrain.c
 
 HEADERS += \
     common/warn.h \

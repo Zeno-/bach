@@ -2,6 +2,7 @@
 #define VPU_BACKEND_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 enum vpuerror {
     VPU_ERR_NONE,
@@ -28,18 +29,17 @@ enum vpu_refreshaction {
 
 struct txtlayer {
     uint16_t    flags;          /* c.f. enum vpu_txtlayerflags */
-    int         rows, cols,
-                cnum;           /* Total characters (row*cols) */
+    int         rows, cols;
 
-    uint8_t     *mem;           /* Character memory */
-
-    uint32_t    *colours;
-    uint32_t    *bgcolours;
-    uint8_t     *attribs;
+    size_t      cnum;           /* Total characters (row*cols) */
+    size_t      charmem_sz;     /* Synonym of cnum */
+    size_t      params_sz;      /* Total param memory size */
+    uint8_t     *charmem;       /* Character memory */
+    uint32_t    *params;        /* FG Colours, BG Colours, Attribs */
 
     uint32_t    fgcolour;       /* Default colour used for font fg */
     uint32_t    bgcolour;       /* Default colour used for font bg */
-    uint8_t     attrib;         /* Default attributes */
+    uint32_t    attrib;         /* Default attributes */
 
     int         cursx, cursy;   /* Cursor position */
 
@@ -75,6 +75,7 @@ int vpu_shouldrefresh(void);
 
 void vpu_refresh(enum vpu_refreshaction action);
 void vpu_clrdisplay(void);
+void vpu_clrtext(void);
 
 uint32_t vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b);
 
