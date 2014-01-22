@@ -20,8 +20,9 @@ OBJECTS := \
 	vpu/backend/render.o	\
 	vpu/backend/text.o	\
 	vpu/fonts/bmfonts.o	\
-	vpu/tests/test.o	\
-	vpu/tests/genterrain.o
+	vpu/tests/test_basiccolours.o	\
+	vpu/tests/test_genterrain.o \
+	vpu/tests/test_scroll.o \
 
 .c.o:
 	$(CC) -o $@ -c $(CFLAGS) $<
