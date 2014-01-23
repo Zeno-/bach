@@ -19,18 +19,18 @@ void vpu_refresh_tlayer(void)
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
 
-    if (!(vpu_tl->flags & VPU_TXTLAYERVISIBLE))
+    if (!(vpu_txtlayer->flags & VPU_TXTLAYERVISIBLE))
         return;
 
     vpu_direct_write_start();
 
-    dest = vpu_pixelmem + vpu_tl->origin;
+    dest = vpu_pixelmem + vpu_txtlayer->origin;
 
     xdelta = VPU_FIXED_FONT_WIDTH;
     ydelta = vpu_instance->w * (vpu_instance->fixedfont->height - 1);
 
-    nrows = vpu_tl->rows;
-    ncols = vpu_tl->cols;
+    nrows = vpu_txtlayer->rows;
+    ncols = vpu_txtlayer->cols;
 
     currchval = vpu_tl_charemem;
     fgcp = TXTCOLORPOS(0,0);
@@ -63,7 +63,7 @@ static void blitglyph(int ch, uint32_t *dest,
 
     fontheight = vpu_instance->fixedfont->height;
 
-    destdelta = vpu_tl->cols * VPU_FIXED_FONT_WIDTH;
+    destdelta = vpu_txtlayer->cols * VPU_FIXED_FONT_WIDTH;
     destrow = dest;
 
     for (i = 0; i < fontheight; i++) {

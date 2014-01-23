@@ -42,7 +42,7 @@ static void initfpstimer(int fpslimit);
  *************************************************************************/
 
 struct display *vpu_instance;
-struct txtlayer *vpu_tl;
+struct txtlayer *vpu_txtlayer;
 
 uint32_t *vpu_pixelmem;
 uint8_t  *vpu_tl_charemem;
@@ -153,13 +153,16 @@ vpu_clrdisplay(void)
 void
 vpu_clrtext(void)
 {
-    memset(vpu_tl_charemem, 0, vpu_tl->charmem_sz);
-    memset(vpu_tl_fgcolormem, vpu_tl->fgcolour,
-                              sizeof vpu_tl->fgcolour * vpu_tl->cnum);
-    memset(vpu_tl_bgcolormem, vpu_tl->bgcolour,
-                              sizeof vpu_tl->bgcolour * vpu_tl->cnum);
-    memset(vpu_tl_attrmem, vpu_tl->attrib,
-                           sizeof vpu_tl->attrib * vpu_tl->cnum);
+    memset(vpu_tl_charemem, 0, vpu_txtlayer->charmem_sz);
+    memset(vpu_tl_fgcolormem,
+           vpu_txtlayer->fgcolour,
+           sizeof vpu_txtlayer->fgcolour * vpu_txtlayer->cnum);
+    memset(vpu_tl_bgcolormem,
+           vpu_txtlayer->bgcolour,
+           sizeof vpu_txtlayer->bgcolour * vpu_txtlayer->cnum);
+    memset(vpu_tl_attrmem,
+           vpu_txtlayer->attrib,
+           sizeof vpu_txtlayer->attrib * vpu_txtlayer->cnum);
 }
 
 void vpu_direct_write_start(void)
@@ -196,7 +199,7 @@ static void
 initexports(void)
 {
     vpu_instance        = &vpu_prv;
-    vpu_tl              = &vpu_prv.txt;
+    vpu_txtlayer        = &vpu_prv.txt;
 
     vpu_pixelmem        = vpu_pdata_prv.vpixels;
     vpu_tl_charemem     = vpu_prv.txt.charmem;

@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 extern struct display *vpu_instance;
-extern struct txtlayer *vpu_tl;
+extern struct txtlayer *vpu_txtlayer;
 
 extern uint32_t *vpu_pixelmem;
 extern uint8_t  *vpu_tl_charemem;
