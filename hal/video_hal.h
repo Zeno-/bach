@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "video_hal_refs.h"
+
 enum vpuerror {
     VPU_ERR_NONE,
     VPU_ERR_INITFAIL,
@@ -76,6 +78,9 @@ int vpu_shouldrefresh(void);
 void vpu_refresh(enum vpu_refreshaction action);
 void vpu_clrdisplay(void);
 void vpu_clrtext(void);
+
+void vpu_direct_write_start(void);
+void vpu_direct_write_end(void);
 
 uint32_t vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b);
 

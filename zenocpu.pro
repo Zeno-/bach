@@ -25,7 +25,8 @@ HEADERS += \
     vpu/config.h \
     vpu/render.h \
     vpu/text.h \
-    vpu/video.h
+    vpu/video.h \
+    hal/video_hal_refs.h
 
 LIBS += -lSDL
 

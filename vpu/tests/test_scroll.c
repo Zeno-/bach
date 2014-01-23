@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
     vpu_settextattr(VPU_TXTATTRIB_REVERSE);
 
-    for (i = 0; i < 50000; i++) {
+    for (i = 0; i < 500; i++) {
         fgcolour = i & 1 ? VTXT_DEF_FGCOLOUR : altcolour;
 
         //vpu_curshome();

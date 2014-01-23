@@ -2,9 +2,9 @@
 
 #include <stdint.h>
 
+#include "config.h"
 #include "hal/video_hal.h"
 #include "hal/video_hal_private.h"
-#include "config.h"
 #include "vpu/fonts/bmfonts.h"
 #include "text.h"
 
@@ -19,20 +19,20 @@ void vpu_refresh_tlayer(void)
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
 
-    if (!(VPU_TL.flags & VPU_TXTLAYERVISIBLE))
+    if (!(vpu_tl->flags & VPU_TXTLAYERVISIBLE))
         return;
 
-    VPU_DIRECTPXWRITE_START();
+    vpu_direct_write_start();
 
-    dest = VPU_PRV_PIXELS + VPU_TL.origin;
+    dest = vpu_pixelmem + vpu_tl->origin;
 
     xdelta = VPU_FIXED_FONT_WIDTH;
-    ydelta = VPU_PRV_INSTANCE.w * (VPU_PRV_INSTANCE.fixedfont->height - 1);
+    ydelta = vpu_instance->w * (vpu_instance->fixedfont->height - 1);
 
-    nrows = VPU_TL.rows;
-    ncols = VPU_TL.cols;
+    nrows = vpu_tl->rows;
+    ncols = vpu_tl->cols;
 
-    currchval = VPU_TL_MEM;
+    currchval = vpu_tl_charemem;
     fgcp = TXTCOLORPOS(0,0);
     bgcp = TXTBGCOLORPOS(0,0);
     atrp = TXTATTRPOS(0,0);
@@ -45,7 +45,7 @@ void vpu_refresh_tlayer(void)
         dest += ydelta;
     }
 
-    VPU_DIRECTPXWRITE_END();
+    vpu_direct_write_end();
 }
 
 static void blitglyph(int ch, uint32_t *dest,
@@ -58,12 +58,12 @@ static void blitglyph(int ch, uint32_t *dest,
     uint32_t *destrow;
     unsigned destdelta;
 
-    glyph = VPU_PRV_INSTANCE.fixedfont->pixeldata
-            + ch * VPU_PRV_INSTANCE.fixedfont->height;
+    glyph = vpu_instance->fixedfont->pixeldata
+            + ch * vpu_instance->fixedfont->height;
 
-    fontheight = VPU_PRV_INSTANCE.fixedfont->height;
+    fontheight = vpu_instance->fixedfont->height;
 
-    destdelta = VPU_TL.cols * VPU_FIXED_FONT_WIDTH;
+    destdelta = vpu_tl->cols * VPU_FIXED_FONT_WIDTH;
     destrow = dest;
 
     for (i = 0; i < fontheight; i++) {

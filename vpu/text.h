@@ -2,31 +2,31 @@
 #define VPU_BACKENDTEXT_H
 
 #include <stdint.h>
-#include "hal/video_hal_private.h"
+#include "hal/video_hal_refs.h"
 
 #define TXTBUFF_TABWIDTH 4
 
 #define TXTCHPOS(x, y) \
     ( \
-        VPU_TL_MEM \
-        + (x) + (y) * VPU_TL.cols \
+        vpu_tl_charemem \
+        + (x) + (y) * vpu_tl->cols \
     )
 #define TXTCOLORPOS(x, y) \
     ( \
-        VPU_TL_FGCOLORMEM \
-        + (x) + (y) * VPU_TL.cols \
+        vpu_tl_fgcolormem \
+        + (x) + (y) * vpu_tl->cols \
     )
 
 #define TXTBGCOLORPOS(x, y) \
     ( \
-        VPU_TL_BGCOLORMEM \
-        + (x) + (y) * VPU_TL.cols \
+        vpu_tl_bgcolormem \
+        + (x) + (y) * vpu_tl->cols \
     )
 
 #define TXTATTRPOS(x, y) \
     ( \
-        VPU_TL_ATTRMEM \
-        + (x) + (y) * VPU_TL.cols \
+        vpu_tl_attrmem \
+        + (x) + (y) * vpu_tl->cols \
     )
 
 uint32_t    *vpu_txtpixelorigin(uint8_t x, uint8_t y);

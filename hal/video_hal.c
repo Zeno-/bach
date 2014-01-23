@@ -13,6 +13,8 @@
 
 #define MAX_VERSIONINFO_LEN 128
 
+#define VID_PRV_SURFACE     (vpu_pdata_prv.vidsurface)
+
 struct fpsctx {
     uint32_t prevtick;
     uint16_t tickInterval;
@@ -20,10 +22,12 @@ struct fpsctx {
 
 struct display vpu_prv;
 struct display_privdata vpu_pdata_prv;
+
 static struct fpsctx fpstimer;
 static char backendstr[MAX_VERSIONINFO_LEN];
 
 static enum vpuerror initsys(void);
+static void initexports(void);
 static enum vpuerror initscr(unsigned w, unsigned h, int fullscreen);
 static void setbackendinfo(void);
 static void setfixedfont(struct display *screen,
@@ -32,6 +36,20 @@ static void setfixedfont(struct display *screen,
 static enum vpuerror inittextsys(const struct vidfont8 *font);
 static void cleanuptextsys(void);
 static void initfpstimer(int fpslimit);
+
+/**************************************************************************
+ * Public exported refs/pointers
+ *************************************************************************/
+
+struct display *vpu_instance;
+struct txtlayer *vpu_tl;
+
+uint32_t *vpu_pixelmem;
+uint8_t  *vpu_tl_charemem;
+uint32_t *vpu_tl_paramsmem;
+uint32_t *vpu_tl_fgcolormem;
+uint32_t *vpu_tl_bgcolormem;
+uint32_t *vpu_tl_attrmem;
 
 /**************************************************************************
  * Public
@@ -61,6 +79,9 @@ vpu_init(unsigned w, unsigned h, int fullscreen,
 
     if ((err = inittextsys(font) != VPU_ERR_NONE))
         return err;
+
+    initexports();
+    vpu_clrtext();
 
     setbackendinfo();
 
@@ -132,13 +153,23 @@ vpu_clrdisplay(void)
 void
 vpu_clrtext(void)
 {
-    memset(VPU_TL.charmem, 0, VPU_TL.charmem_sz);
-    memset(VPU_TL_FGCOLORMEM, VPU_TL.fgcolour,
-                              sizeof VPU_TL.fgcolour * VPU_TL.cnum);
-    memset(VPU_TL_BGCOLORMEM, VPU_TL.bgcolour,
-                              sizeof VPU_TL.bgcolour * VPU_TL.cnum);
-    memset(VPU_TL_ATTRMEM, VPU_TL.attrib,
-                           sizeof VPU_TL.attrib * VPU_TL.cnum);
+    memset(vpu_tl_charemem, 0, vpu_tl->charmem_sz);
+    memset(vpu_tl_fgcolormem, vpu_tl->fgcolour,
+                              sizeof vpu_tl->fgcolour * vpu_tl->cnum);
+    memset(vpu_tl_bgcolormem, vpu_tl->bgcolour,
+                              sizeof vpu_tl->bgcolour * vpu_tl->cnum);
+    memset(vpu_tl_attrmem, vpu_tl->attrib,
+                           sizeof vpu_tl->attrib * vpu_tl->cnum);
+}
+
+void vpu_direct_write_start(void)
+{
+    SDL_LockSurface(VID_PRV_SURFACE);
+}
+
+void vpu_direct_write_end(void)
+{
+  SDL_UnlockSurface(VID_PRV_SURFACE);
 }
 
 uint32_t
@@ -159,6 +190,20 @@ initsys(void)
         return VPU_ERR_INITFAIL;
 
     return VPU_ERR_NONE;
+}
+
+static void
+initexports(void)
+{
+    vpu_instance        = &vpu_prv;
+    vpu_tl              = &vpu_prv.txt;
+
+    vpu_pixelmem        = vpu_pdata_prv.vpixels;
+    vpu_tl_charemem     = vpu_prv.txt.charmem;
+    vpu_tl_paramsmem    = vpu_prv.txt.params;
+    vpu_tl_fgcolormem   = vpu_prv.txt.params;
+    vpu_tl_bgcolormem   = vpu_prv.txt.params + vpu_prv.txt.cnum;
+    vpu_tl_attrmem      = vpu_prv.txt.params + vpu_prv.txt.cnum * 2;
 }
 
 static enum vpuerror
@@ -257,10 +302,7 @@ inittextsys(const struct vidfont8 *font)
             = calloc(ccount, sizeof *vpu_prv.txt.charmem) ) != NULL;
     ok &= ( vpu_prv.txt.params = malloc(pmemreq) ) != NULL;
 
-    if (ok) {
-        vpu_clrtext();
-    }
-    else {
+    if (!ok) {
         cleanuptextsys();
         return VPU_ERR_INITMEMFAIL;
     }

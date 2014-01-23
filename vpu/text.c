@@ -15,10 +15,10 @@ vpu_txtpixelorigin(uint8_t x, uint8_t y)
     uint32_t *pos;
     unsigned fontheight;
 
-    fontheight = VPU_PRV_INSTANCE.fixedfont->height;
-    pos = VPU_PRV_PIXELS;
-    pos += VPU_TL.origin;
-    pos += VPU_PRV_INSTANCE.w * y * fontheight + x * VPU_FIXED_FONT_WIDTH;
+    fontheight = vpu_instance->fixedfont->height;
+    pos = vpu_pixelmem;
+    pos += vpu_tl->origin;
+    pos += vpu_instance->w * y * fontheight + x * VPU_FIXED_FONT_WIDTH;
 
     return pos;
 }
@@ -26,13 +26,13 @@ vpu_txtpixelorigin(uint8_t x, uint8_t y)
 uint16_t
 vpu_textlayerflags(void)
 {
-    return VPU_TL.flags;
+    return vpu_tl->flags;
 }
 
 void
 vpu_settextlayerflags(uint16_t flags)
 {
-    VPU_TL.flags = flags;
+    vpu_tl->flags = flags;
 }
 
 void
@@ -50,15 +50,15 @@ vpu_scrolltexty(void)
 
     src  = TXTCHPOS(0, 1);
     dest = TXTCHPOS(0, 0);
-    memmove(dest, src, (VPU_TL.charmem_sz - VPU_TL.cols) * sizeof *src);
-    memset(TXTCHPOS(0, VPU_TL.rows-1), 0, VPU_TL.cols);
+    memmove(dest, src, (vpu_tl->charmem_sz - vpu_tl->cols) * sizeof *src);
+    memset(TXTCHPOS(0, vpu_tl->rows-1), 0, vpu_tl->cols);
 
-    cdest = VPU_TL_PARAMSMEM;
-    csrc  = VPU_TL_PARAMSMEM + VPU_TL.cols;
-    memmove(cdest, csrc, (VPU_TL.params_sz - VPU_TL.cols) * sizeof *csrc);
-    memset(TXTCOLORPOS(0, VPU_TL.rows-1), VPU_TL.fgcolour, VPU_TL.cols);
-    memset(TXTBGCOLORPOS(0, VPU_TL.rows-1), VPU_TL.bgcolour, VPU_TL.cols);
-    memset(TXTATTRPOS(0, VPU_TL.rows-1), VPU_TL.attrib, VPU_TL.cols);
+    cdest = vpu_tl_paramsmem;
+    csrc  = vpu_tl_paramsmem + vpu_tl->cols;
+    memmove(cdest, csrc, (vpu_tl->params_sz - vpu_tl->cols) * sizeof *csrc);
+    memset(TXTCOLORPOS(0, vpu_tl->rows-1), vpu_tl->fgcolour, vpu_tl->cols);
+    memset(TXTBGCOLORPOS(0, vpu_tl->rows-1), vpu_tl->bgcolour, vpu_tl->cols);
+    memset(TXTATTRPOS(0, vpu_tl->rows-1), vpu_tl->attrib, vpu_tl->cols);
 }
 
 /**************************************************************************
@@ -68,31 +68,31 @@ vpu_scrolltexty(void)
 uint32_t
 vpu_textfg(void)
 {
-    return VPU_TL.fgcolour;
+    return vpu_tl->fgcolour;
 }
 
 void
 vpu_settextfg(uint32_t newcolour)
 {
-    VPU_TL.fgcolour = newcolour;
+    vpu_tl->fgcolour = newcolour;
 }
 
 void
 vpu_settextbg(uint32_t newcolour)
 {
-    VPU_TL.bgcolour = newcolour;
+    vpu_tl->bgcolour = newcolour;
 }
 
 uint8_t
 vpu_textattr(void)
 {
-    return VPU_TL.attrib;
+    return vpu_tl->attrib;
 }
 
 void
 vpu_settextattr(uint8_t attr)
 {
-    VPU_TL.attrib = attr;
+    vpu_tl->attrib = attr;
 }
 
 /**************************************************************************
@@ -102,20 +102,20 @@ vpu_settextattr(uint8_t attr)
 void
 vpu_putchar(int ch)
 {
-    vpu_putchar_c(ch, VPU_TL.fgcolour);
+    vpu_putchar_c(ch, vpu_tl->fgcolour);
 }
 
 void
 vpu_putchar_c(int ch, uint32_t colour)
 {
-    vpu_putcharat_c(ch, VPU_TL.cursx, VPU_TL.cursy, colour);
+    vpu_putcharat_c(ch, vpu_tl->cursx, vpu_tl->cursy, colour);
     vpu_cursadvance();
 }
 
 void
 vpu_puts(const char *s)
 {
-    vpu_puts_c(s, VPU_TL.fgcolour);
+    vpu_puts_c(s, vpu_tl->fgcolour);
 }
 
 void
@@ -140,7 +140,7 @@ vpu_puts_c(const char *s, uint32_t colour)
 void
 vpu_puttab(void)
 {
-    vpu_puttab_c(VPU_TL.fgcolour);
+    vpu_puttab_c(vpu_tl->fgcolour);
 }
 
 void
@@ -155,7 +155,7 @@ vpu_puttab_c(uint32_t colour)
 void
 vpu_putcharat(int ch, uint8_t x, uint8_t y)
 {
-    vpu_putcharat_c(ch, x, y, VPU_TL.fgcolour);
+    vpu_putcharat_c(ch, x, y, vpu_tl->fgcolour);
 }
 
 void
@@ -163,8 +163,8 @@ vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour)
 {
     *TXTCHPOS(x, y) = ch;
     *TXTCOLORPOS(x, y) = colour;
-    *TXTBGCOLORPOS(x, y) = VPU_TL.bgcolour;
-    *TXTATTRPOS(x, y) = VPU_TL.attrib;
+    *TXTBGCOLORPOS(x, y) = vpu_tl->bgcolour;
+    *TXTATTRPOS(x, y) = vpu_tl->attrib;
 }
 
 /**************************************************************************
@@ -174,15 +174,15 @@ vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour)
 void
 vpu_curssetpos(uint8_t x, uint8_t y)
 {
-    VPU_TL.cursx = x;
-    VPU_TL.cursy = y;
+    vpu_tl->cursx = x;
+    vpu_tl->cursy = y;
 }
 
 void
 vpu_curssetposrel(int x, int y)
 {
-    VPU_TL.cursx += x;
-    VPU_TL.cursy += y;
+    vpu_tl->cursx += x;
+    vpu_tl->cursy += y;
     restraincx();
     restraincy();
 }
@@ -190,25 +190,25 @@ vpu_curssetposrel(int x, int y)
 void
 vpu_curshome(void)
 {
-    VPU_TL.cursx = 0;
+    vpu_tl->cursx = 0;
 }
 
 void
 vpu_cursadvance(void)
 {
-    VPU_TL.cursx++;
-    if (VPU_TL.cursx >= VPU_TL.cols)
-        VPU_TL.cursx = 0;
+    vpu_tl->cursx++;
+    if (vpu_tl->cursx >= vpu_tl->cols)
+        vpu_tl->cursx = 0;
 }
 
 void
 vpu_cursnewline(void)
 {
-    VPU_TL.cursx = 0;
-    VPU_TL.cursy++;
-    if  (VPU_TL.cursy >= VPU_TL.rows) {
-        VPU_TL.cursy--;
-        if (VPU_TL.flags & VPU_TXTAUTOSCROLL)
+    vpu_tl->cursx = 0;
+    vpu_tl->cursy++;
+    if  (vpu_tl->cursy >= vpu_tl->rows) {
+        vpu_tl->cursy--;
+        if (vpu_tl->flags & VPU_TXTAUTOSCROLL)
             vpu_scrolltexty();
     }
 }
@@ -220,17 +220,17 @@ vpu_cursnewline(void)
 inline static void
 restraincx(void)
 {
-    if (VPU_TL.cursx < 0)
-        VPU_TL.cursx = 0;
-    else if (VPU_TL.cursx >= VPU_TL.cols)
-        VPU_TL.cursx = VPU_TL.cols - 1;
+    if (vpu_tl->cursx < 0)
+        vpu_tl->cursx = 0;
+    else if (vpu_tl->cursx >= vpu_tl->cols)
+        vpu_tl->cursx = vpu_tl->cols - 1;
 }
 
 inline static void
 restraincy(void)
 {
-    if (VPU_TL.cursy < 0)
-        VPU_TL.cursy = 0;
-    if (VPU_TL.cursy >= VPU_TL.rows)
-        VPU_TL.cursy = VPU_TL.rows;
+    if (vpu_tl->cursy < 0)
+        vpu_tl->cursy = 0;
+    if (vpu_tl->cursy >= vpu_tl->rows)
+        vpu_tl->cursy = vpu_tl->rows;
 }
