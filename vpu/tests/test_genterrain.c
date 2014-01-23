@@ -1,4 +1,4 @@
-#include "vpu/backend/config.h"
+#include "vpu/config.h"
 
 #if VPU_BUILDTESTS == 1 && VPU_BUILDTEST_TERRAIN == 1
 
@@ -8,9 +8,9 @@
 
 #include <unistd.h>
 
-#include "vpu/backend/base.h"
-#include "vpu/backend/text.h"
-#include "vpu/backend/config.h"
+#include "vpu/video.h"
+#include "vpu/text.h"
+#include "vpu/config.h"
 #include "vpu/fonts/bmfonts.h"
 
 #define OUTPUTCOLOURED      1

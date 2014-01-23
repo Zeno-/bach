@@ -1,5 +1,5 @@
-#ifndef VPU_BACKEND_H
-#define VPU_BACKEND_H
+#ifndef VPU_HAL_H
+#define VPU_HAL_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -79,4 +79,4 @@ void vpu_clrtext(void);
 
 uint32_t vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b);
 
-#endif /* VPU_BACKEND_H */
+#endif /* VPU_HAL_H */

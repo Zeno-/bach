@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 #include "vpu/fonts/bmfonts.h"
-#include "base.h"
-#include "private.h"
+#include "hal/video_hal.h"
+#include "hal/video_hal_private.h"
 #include "common/warn.h"
 
 inline static void restraincx(void);

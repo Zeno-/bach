@@ -4,25 +4,28 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
-    vpu/backend/base.c \
-    vpu/backend/text.c \
-    vpu/fonts/bmfonts.c \
-    vpu/backend/render.c \
     timer/timer.c \
+    hal/video_hal.c \
+    vpu/fonts/bmfonts.c \
+    vpu/render.c \
+    vpu/text.c \
+    vpu/video.c \
     vpu/tests/test_basiccolours.c \
     vpu/tests/test_scroll.c \
     vpu/tests/test_genterrain.c
 
 HEADERS += \
-    common/warn.h \
-    vpu/backend/base.h \
-    vpu/backend/colour.h \
-    vpu/backend/config.h \
-    vpu/backend/private.h \
-    vpu/backend/text.h \
+    timer/timer.h \
+    hal/video_hal.h \
+    hal/video_hal_private.h \
     vpu/fonts/bmfonts.h \
     vpu/backend/render.h \
-    timer/timer.h
+    vpu/backend/video.h \
+    vpu/colour.h \
+    vpu/config.h \
+    vpu/render.h \
+    vpu/text.h \
+    vpu/video.h
 
 LIBS += -lSDL
 
@@ -33,3 +36,6 @@ win32 {
     INCLUDEPATH += J:/SDL-1.2.15/include
     LIBS += -LJ:/SDL-1.2.15/lib -lmingw32 -lSDLmain -lSDL
 }
+
+OTHER_FILES += \
+    hal/README

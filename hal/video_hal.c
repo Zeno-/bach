@@ -6,10 +6,10 @@
 #include <SDL/SDL_main.h>
 
 #include "vpu/fonts/bmfonts.h"
-#include "base.h"
-#include "private.h"
-#include "config.h"
-#include "render.h"
+#include "video_hal.h"
+#include "video_hal_private.h"
+#include "vpu/config.h"
+#include "vpu/render.h"
 
 #define MAX_VERSIONINFO_LEN 128
 

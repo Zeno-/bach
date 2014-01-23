@@ -2,7 +2,7 @@
 #define VPU_BACKENDTEXT_H
 
 #include <stdint.h>
-#include "private.h"
+#include "hal/video_hal_private.h"
 
 #define TXTBUFF_TABWIDTH 4
 

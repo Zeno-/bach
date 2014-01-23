@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-#include "base.h"
-#include "private.h"
+#include "hal/video_hal.h"
+#include "hal/video_hal_private.h"
 #include "config.h"
 #include "vpu/fonts/bmfonts.h"
 #include "text.h"
