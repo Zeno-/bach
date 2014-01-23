@@ -9,7 +9,6 @@ SOURCES += \
     vpu/fonts/bmfonts.c \
     vpu/render.c \
     vpu/text.c \
-    vpu/video.c \
     vpu/tests/test_basiccolours.c \
     vpu/tests/test_scroll.c \
     vpu/tests/test_genterrain.c

@@ -3,8 +3,7 @@
 #include <stdint.h>
 
 #include "config.h"
-#include "hal/video_hal.h"
-#include "hal/video_hal_private.h"
+#include "vpu/video.h"
 #include "vpu/fonts/bmfonts.h"
 #include "text.h"
 

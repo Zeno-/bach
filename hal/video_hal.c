@@ -5,9 +5,9 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_main.h>
 
-#include "vpu/fonts/bmfonts.h"
-#include "video_hal.h"
 #include "video_hal_private.h"
+#include "vpu/fonts/bmfonts.h"
+#include "vpu/video.h"
 #include "vpu/config.h"
 #include "vpu/render.h"
 

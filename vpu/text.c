@@ -1,9 +1,9 @@
 #include "text.h"
 
-#include <stdlib.h>
+#include <string.h>
+
+#include "vpu/video.h"
 #include "vpu/fonts/bmfonts.h"
-#include "hal/video_hal.h"
-#include "hal/video_hal_private.h"
 #include "common/warn.h"
 
 inline static void restraincx(void);
