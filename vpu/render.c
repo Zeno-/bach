@@ -18,20 +18,20 @@ void vpu_refresh_tlayer(void)
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
 
-    if (!(vpurefs.txtlayer->flags & VPU_TXTLAYERVISIBLE))
+    if (!(vpurefs->txtlayer->flags & VPU_TXTLAYERVISIBLE))
         return;
 
     vpu_direct_write_start();
 
-    dest = vpurefs.pixelmem + vpurefs.txtlayer->origin;
+    dest = vpurefs->pixelmem + vpurefs->txtlayer->origin;
 
     xdelta = VPU_FIXED_FONT_WIDTH;
-    ydelta = vpurefs.instance->w * (vpurefs.instance->fixedfont->height - 1);
+    ydelta = vpurefs->instance->w * (vpurefs->instance->fixedfont->height - 1);
 
-    nrows = vpurefs.txtlayer->rows;
-    ncols = vpurefs.txtlayer->cols;
+    nrows = vpurefs->txtlayer->rows;
+    ncols = vpurefs->txtlayer->cols;
 
-    currchval = vpurefs.txt_charmem;
+    currchval = vpurefs->txt_charmem;
     fgcp = TXTCOLORPOS(0,0);
     bgcp = TXTBGCOLORPOS(0,0);
     atrp = TXTATTRPOS(0,0);
@@ -57,12 +57,12 @@ static void blitglyph(int ch, uint32_t *dest,
     uint32_t *destrow;
     unsigned destdelta;
 
-    glyph = vpurefs.instance->fixedfont->pixeldata
-            + ch * vpurefs.instance->fixedfont->height;
+    glyph = vpurefs->instance->fixedfont->pixeldata
+            + ch * vpurefs->instance->fixedfont->height;
 
-    fontheight = vpurefs.instance->fixedfont->height;
+    fontheight = vpurefs->instance->fixedfont->height;
 
-    destdelta = vpurefs.txtlayer->cols * VPU_FIXED_FONT_WIDTH;
+    destdelta = vpurefs->txtlayer->cols * VPU_FIXED_FONT_WIDTH;
     destrow = dest;
 
     for (i = 0; i < fontheight; i++) {

@@ -71,7 +71,7 @@ struct vpu_refs{
     uint32_t *txt_attrmem;
 };
 
-extern struct vpu_refs vpurefs;
+extern const struct vpu_refs *vpurefs;
 
 /* fullscreen: 0 = Windowed, 1 = fullscreen
  * font: NULL = Use default

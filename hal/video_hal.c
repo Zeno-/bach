@@ -42,21 +42,8 @@ static void initfpstimer(int fpslimit);
  * Public exported refs/pointers
  *************************************************************************/
 
-// TODO:    Encompass these in a struct
-
-struct vpu_refs vpurefs;
-
-#if 0
-struct display *vpu_instance;
-struct txtlayer *vpu_txtlayer;
-
-uint32_t *vpu_pixelmem;
-uint8_t  *vpu_tl_charemem;
-uint32_t *vpu_tl_paramsmem;
-uint32_t *vpu_tl_fgcolormem;
-uint32_t *vpu_tl_bgcolormem;
-uint32_t *vpu_tl_attrmem;
-#endif
+static struct vpu_refs vpurefs_p;
+const struct vpu_refs *vpurefs = &vpurefs_p;
 
 /**************************************************************************
  * Public
@@ -160,16 +147,16 @@ vpu_clrdisplay(void)
 void
 vpu_clrtext(void)
 {
-    memset(vpurefs.txt_charmem, 0, vpurefs.txtlayer->charmem_sz);
-    memset(vpurefs.txt_fgcolormem,
-           vpurefs.txtlayer->fgcolour,
-           sizeof vpurefs.txtlayer->fgcolour * vpurefs.txtlayer->cnum);
-    memset(vpurefs.txt_bgcolormem,
-           vpurefs.txtlayer->bgcolour,
-           sizeof vpurefs.txtlayer->bgcolour * vpurefs.txtlayer->cnum);
-    memset(vpurefs.txt_attrmem,
-           vpurefs.txtlayer->attrib,
-           sizeof vpurefs.txtlayer->attrib * vpurefs.txtlayer->cnum);
+    memset(vpurefs->txt_charmem, 0, vpurefs->txtlayer->charmem_sz);
+    memset(vpurefs->txt_fgcolormem,
+           vpurefs->txtlayer->fgcolour,
+           sizeof vpurefs->txtlayer->fgcolour * vpurefs->txtlayer->cnum);
+    memset(vpurefs->txt_bgcolormem,
+           vpurefs->txtlayer->bgcolour,
+           sizeof vpurefs->txtlayer->bgcolour * vpurefs->txtlayer->cnum);
+    memset(vpurefs->txt_attrmem,
+           vpurefs->txtlayer->attrib,
+           sizeof vpurefs->txtlayer->attrib * vpurefs->txtlayer->cnum);
 }
 
 void vpu_direct_write_start(void)
@@ -205,15 +192,15 @@ initsys(void)
 static void
 initexports(void)
 {
-    vpurefs.instance        = &vpu_prv;
-    vpurefs.txtlayer        = &vpu_prv.txt;
+    vpurefs_p.instance          = &vpu_prv;
+    vpurefs_p.txtlayer          = &vpu_prv.txt;
 
-    vpurefs.pixelmem        = vpu_pdata_prv.vpixels;
-    vpurefs.txt_charmem     = vpu_prv.txt.charmem;
-    vpurefs.txt_paramsmem   = vpu_prv.txt.params;
-    vpurefs.txt_fgcolormem  = vpu_prv.txt.params;
-    vpurefs.txt_bgcolormem  = vpu_prv.txt.params + vpu_prv.txt.cnum;
-    vpurefs.txt_attrmem     = vpu_prv.txt.params + vpu_prv.txt.cnum * 2;
+    vpurefs_p.pixelmem          = vpu_pdata_prv.vpixels;
+    vpurefs_p.txt_charmem       = vpu_prv.txt.charmem;
+    vpurefs_p.txt_paramsmem     = vpu_prv.txt.params;
+    vpurefs_p.txt_fgcolormem    = vpu_prv.txt.params;
+    vpurefs_p.txt_bgcolormem    = vpu_prv.txt.params + vpu_prv.txt.cnum;
+    vpurefs_p.txt_attrmem       = vpu_prv.txt.params + vpu_prv.txt.cnum * 2;
 }
 
 static enum vpuerror
