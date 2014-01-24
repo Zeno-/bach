@@ -16,14 +16,17 @@ CFLAGS += -I. -Icommon -Ivpu/backend -Ivpu/fonts $(INCLUDES) \
 	  -DPROGNAME=\"$(PROGNAME)\"
 
 OBJECTS := \
-	vpu/backend/base.o	\
-	vpu/backend/render.o	\
-	vpu/backend/text.o	\
-	vpu/fonts/bmfonts.o	\
-	vpu/tests/test_basiccolours.o	\
-	vpu/tests/test_genterrain.o \
-	vpu/tests/test_scroll.o \
-
+    vpu/fonts/bmfonts.o \
+    vpu/render.o \
+    vpu/text.o \
+    vpu/tests/test_basiccolours.o \
+    vpu/tests/test_scroll.o \
+    vpu/tests/test_genterrain.o \
+    vpu/tests/test_common.o \
+    hal/sdl/hal_init.o \
+    hal/sdl/hal_kybdmouse.o \
+    hal/sdl/hal_timer.o \
+    hal/sdl/hal_video.o
 .c.o:
 	$(CC) -o $@ -c $(CFLAGS) $<
 
