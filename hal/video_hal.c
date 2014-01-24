@@ -41,6 +41,8 @@ static void initfpstimer(int fpslimit);
  * Public exported refs/pointers
  *************************************************************************/
 
+// TODO:    Encompass these in a struct
+
 struct display *vpu_instance;
 struct txtlayer *vpu_txtlayer;
 
@@ -302,7 +304,7 @@ inittextsys(const struct vidfont8 *font)
      */
 
     ok  = ( vpu_prv.txt.charmem
-            = calloc(ccount, sizeof *vpu_prv.txt.charmem) ) != NULL;
+            = malloc(ccount * sizeof *vpu_prv.txt.charmem) ) != NULL;
     ok &= ( vpu_prv.txt.params = malloc(pmemreq) ) != NULL;
 
     if (!ok) {
