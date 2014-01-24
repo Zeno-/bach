@@ -12,7 +12,7 @@ LDFLAGS := -s $(LIBS)
 
 # --------------------------------------------------------------------------
 
-CFLAGS += -I. -Icommon -Ivpu/backend -Ivpu/fonts $(INCLUDES) \
+CFLAGS += -I. $(INCLUDES) \
 	  -DPROGNAME=\"$(PROGNAME)\"
 
 OBJECTS := \
