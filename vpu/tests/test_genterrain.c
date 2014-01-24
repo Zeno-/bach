@@ -35,6 +35,11 @@ int main(int argc, char **argv)
 
     int i;
 
+    if (hal_init() != HAL_NOERROR) {
+       fputs("Inititialisation of HAL failed.\n", stderr);
+       exit(1);
+    }
+
     if (vpu_init(1024, 768, 0, &vidfont8x8)
             != VPU_ERR_NONE) {
         fputs("Could not init VPU\n", stderr);

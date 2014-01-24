@@ -10,6 +10,7 @@
 #include "vpu/video.h"
 #include "vpu/text.h"
 #include "vpu/config.h"
+#include "test_common.h"
 
 #define ITERATIONS 500
 #define DOAUTOSCROLL 1
@@ -24,11 +25,7 @@ int main(int argc, char **argv)
     uint32_t fgcolour;
     uint32_t altcolour;
 
-    if (vpu_init(SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0, NULL)
-            != VPU_ERR_NONE) {
-        fputs("Could not init VPU\n", stderr);
-        exit(1);
-    }
+    vput_test_initall();
 
     fputs("Video subsystem running\n", stdout);
 

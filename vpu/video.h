@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "hal/video_hal_refs.h"
+#include "hal/hal.h"
 
 enum vpuerror {
     VPU_ERR_NONE,

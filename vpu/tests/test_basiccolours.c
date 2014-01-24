@@ -10,6 +10,7 @@
 #include "hal/hal.h"
 #include "vpu/video.h"
 #include "vpu/text.h"
+#include "test_common.h"
 #include "config_master.h"
 
 int main(int argc, char **argv)
@@ -20,16 +21,7 @@ int main(int argc, char **argv)
     struct display *scr;
     int i, r, c;
 
-    if (hal_init() != HAL_NOERROR) {
-        fputs("Inititialisation of HAL failed.\n", stderr);
-        exit(1);
-    }
-
-    if (vpu_init(SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0, NULL)
-            != VPU_ERR_NONE) {
-        fputs("Could not init VPU\n", stderr);
-        exit(1);
-    }
+    vput_test_initall();
 
     scr = vpu_getinstance();
 
