@@ -15,7 +15,6 @@ SOURCES += \
 
 HEADERS += \
     timer/timer.h \
-    hal/video_hal.h \
     hal/video_hal_private.h \
     vpu/fonts/bmfonts.h \
     vpu/backend/render.h \

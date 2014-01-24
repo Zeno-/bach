@@ -11,52 +11,60 @@
 #include "vpu/text.h"
 #include "vpu/config.h"
 
+#define ITERATIONS 500
+#define DOAUTOSCROLL 1
+
 int main(int argc, char **argv)
 {
     (void)argc; /* UNUSED */
     (void)argv; /* UNUSED */
 
     size_t i;
+    char str[30];
+    uint32_t fgcolour;
+    uint32_t altcolour;
 
     if (vpu_init(SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0, NULL)
             != VPU_ERR_NONE) {
         fputs("Could not init VPU\n", stderr);
         exit(1);
     }
-    char str[30];
-    uint32_t fgcolour;
-    uint32_t altcolour;
-
 
     fputs("Video subsystem running\n", stdout);
 
+    /* Set/clear scroll flag is set */
+#if DOAUTOSCROLL == 1
+    vpu_settextlayerflags( vpu_textlayerflags() | VPU_TXTAUTOSCROLL);
+#else
+    vpu_settextlayerflags( vpu_textlayerflags() &  ~VPU_TXTAUTOSCROLL);
+#endif
+
+    vpu_settextattr(VPU_TXTATTRIB_REVERSE);     /* Reverse text */
+
+    /* Colours for the test text */
     fgcolour    = vpu_rgbto32(0xa0, 0, 0);
     altcolour   = vpu_rgbto32(0x00, 0x00, 0xff);
 
-    /* Ensure text auto scroll flag is set */
-    vpu_settextlayerflags( vpu_textlayerflags() | VPU_TXTAUTOSCROLL);
-
     vpu_puts("Video subsystem   : Running\n");
+
     vpu_settextfg(vpu_rgbto32(0xa0, 0xa0, 0));
     vpu_puts("VPU Backend       : ");
     vpu_puts(vpu_backendinfostr());
-    vpu_puts_c("\n---------------------------------------------\n", fgcolour);
+    vpu_puts_c("\n---------------------------------------------\n",
+               fgcolour);
 
-    vpu_settextattr(VPU_TXTATTRIB_REVERSE);
-
-    for (i = 0; i < 500; i++) {
+    for (i = 0; i < ITERATIONS; i++) {
+        /* Odd and even lines different colour */
         fgcolour = i & 1 ? VTXT_DEF_FGCOLOUR : altcolour;
 
-        //vpu_curshome();
         sprintf(str, "Counter: %zu\n", i+1);
         vpu_puts_c(str, fgcolour);
         vpu_refresh(VPU_REFRESH_NORMAL);
-        //sleep(1);
     }
 
     vpu_refresh(VPU_REFRESH_FORCE);
-    sleep(2);
 
+    sleep(2);
     fputs("Exiting\n", stdout);
 
     return 0;

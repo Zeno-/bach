@@ -21,8 +21,8 @@
  */
 #define VPU_BUILDTESTS              1
 
-#define VPU_BUILDTEST_BASICCOLOURS  0
-#define VPU_BUILDTEST_SCROLL        1
+#define VPU_BUILDTEST_BASICCOLOURS  1
+#define VPU_BUILDTEST_SCROLL        0
 #define VPU_BUILDTEST_TERRAIN       0
 
 #endif /* VPU_BACKENDCONFIG_H */

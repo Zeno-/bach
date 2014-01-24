@@ -36,16 +36,14 @@ int main(int argc, char **argv)
     vpu_puts(vpu_backendinfostr());
     vpu_puts("\n---------------------------------------------\n");
 
-
     vpu_settextlayerflags( vpu_textlayerflags() & ~VPU_TXTAUTOSCROLL);
 
-
-    for (i = 0; i < 10000; i++) {
+    for (i = 0; i < 5000; i++) {
         vpu_settextattr(VPU_TXTATTRIB_REVERSE);
         vpu_curssetpos(0, 4);
         for (r = 4; r < scr->txt.rows; r++) {
             for (c = 0; c < scr->txt.cols; c++) {
-                vpu_settextfg(vpu_rgbto32(r+c, rand()%32, r+c));
+                vpu_settextfg(vpu_rgbto32(r + c, rand() % 32, r + c));
                 vpu_putchar(' ');
             }
             vpu_puts("\n");
