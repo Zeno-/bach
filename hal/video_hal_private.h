@@ -1,7 +1,6 @@
 #ifndef VID_BACKENDPRIV_H
 #define VID_BACKENDPRIV_H
 
-#include <SDL/SDL.h>
 #include "video_hal_refs.h"
 
 struct display_privdata {

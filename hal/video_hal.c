@@ -3,8 +3,8 @@
 #include <time.h>
 
 #include <SDL/SDL.h>
-#include <SDL/SDL_main.h>
 
+#include "hal/hal.h"
 #include "video_hal_private.h"
 #include "vpu/fonts/bmfonts.h"
 #include "vpu/video.h"
@@ -26,7 +26,6 @@ struct display_privdata vpu_pdata_prv;
 static struct fpsctx fpstimer;
 static char backendstr[MAX_VERSIONINFO_LEN];
 
-static enum vpuerror initsys(void);
 static void initexports(void);
 static enum vpuerror initscr(unsigned w, unsigned h, int fullscreen);
 static void setbackendinfo(void);
@@ -54,8 +53,12 @@ vpu_init(unsigned w, unsigned h, int fullscreen,
 {
     enum vpuerror err;
 
-    if ((err = initsys()) != VPU_ERR_NONE)
-        return err;
+    if (!hal_isinitalised()) {
+        fputs("Error: Hardware Abstraction Layer not initialised.\n",
+              stderr);
+        return VPU_ERR_INITFAIL;
+    }
+
     if ((err = initscr(w, h, fullscreen)) != VPU_ERR_NONE)
         return err;
 
@@ -65,8 +68,6 @@ vpu_init(unsigned w, unsigned h, int fullscreen,
      * atexit() now.
      */
     atexit(vpu_cleanup);
-
-    SDL_WM_SetCaption(DEFAULT_PROGNAME, NULL);
 
     initfpstimer(VPU_FPSLIMIT);
 
@@ -85,7 +86,6 @@ void
 vpu_cleanup(void)
 {
     cleanuptextsys();
-    SDL_Quit();
 }
 
 const char *
@@ -178,15 +178,6 @@ vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b)
 /**************************************************************************
  * Private
  *************************************************************************/
-
-static enum vpuerror
-initsys(void)
-{
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
-        return VPU_ERR_INITFAIL;
-
-    return VPU_ERR_NONE;
-}
 
 static void
 initexports(void)

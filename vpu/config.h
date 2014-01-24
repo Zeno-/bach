@@ -14,8 +14,6 @@
 
 #define VPU_FPSLIMIT        60
 
-#define DEFAULT_PROGNAME    "VPU Display"
-
 /* 0 = Build no tests
  * 1 = Build test as defined by VPU_BUILDTEST_*
  */

@@ -11,7 +11,9 @@ SOURCES += \
     vpu/text.c \
     vpu/tests/test_basiccolours.c \
     vpu/tests/test_scroll.c \
-    vpu/tests/test_genterrain.c
+    vpu/tests/test_genterrain.c \
+    hal/kybdmouse_hal.c \
+    hal/init_hal.c
 
 HEADERS += \
     timer/timer.h \
@@ -24,7 +26,11 @@ HEADERS += \
     vpu/render.h \
     vpu/text.h \
     vpu/video.h \
-    hal/video_hal_refs.h
+    hal/video_hal_refs.h \
+    hal/kybdmouse_hal.h \
+    hal/init_hal.h \
+    hal/hal.h \
+    config_master.h
 
 LIBS += -lSDL
 
