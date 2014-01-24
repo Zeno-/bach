@@ -59,6 +59,20 @@ struct display {
     void *pdata;                /* Private */
 };
 
+struct vpu_refs{
+    struct display *instance;
+    struct txtlayer *txtlayer;
+
+    uint32_t *pixelmem;
+    uint8_t  *txt_charmem;
+    uint32_t *txt_paramsmem;
+    uint32_t *txt_fgcolormem;
+    uint32_t *txt_bgcolormem;
+    uint32_t *txt_attrmem;
+};
+
+extern struct vpu_refs vpurefs;
+
 /* fullscreen: 0 = Windowed, 1 = fullscreen
  * font: NULL = Use default
  */

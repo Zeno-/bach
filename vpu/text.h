@@ -8,25 +8,25 @@
 
 #define TXTCHPOS(x, y) \
     ( \
-        vpu_tl_charemem \
-        + (x) + (y) * vpu_txtlayer->cols \
+        vpurefs.txt_charmem \
+        + (x) + (y) * vpurefs.txtlayer->cols \
     )
 #define TXTCOLORPOS(x, y) \
     ( \
-        vpu_tl_fgcolormem \
-        + (x) + (y) * vpu_txtlayer->cols \
+        vpurefs.txt_fgcolormem \
+        + (x) + (y) * vpurefs.txtlayer->cols \
     )
 
 #define TXTBGCOLORPOS(x, y) \
     ( \
-        vpu_tl_bgcolormem \
-        + (x) + (y) * vpu_txtlayer->cols \
+        vpurefs.txt_bgcolormem \
+        + (x) + (y) * vpurefs.txtlayer->cols \
     )
 
 #define TXTATTRPOS(x, y) \
     ( \
-        vpu_tl_attrmem \
-        + (x) + (y) * vpu_txtlayer->cols \
+        vpurefs.txt_attrmem \
+        + (x) + (y) * vpurefs.txtlayer->cols \
     )
 
 uint32_t    *vpu_txtpixelorigin(uint8_t x, uint8_t y);
