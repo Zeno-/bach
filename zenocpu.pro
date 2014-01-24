@@ -4,21 +4,20 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
-    timer/timer.c \
     vpu/fonts/bmfonts.c \
     vpu/render.c \
     vpu/text.c \
     vpu/tests/test_basiccolours.c \
     vpu/tests/test_scroll.c \
     vpu/tests/test_genterrain.c \
-    hal/sdl/video_hal.c \
-    hal/sdl/kybdmouse_hal.c \
-    hal/sdl/init_hal.c \
-    vpu/tests/test_common.c
+    vpu/tests/test_common.c \
+    hal/sdl/hal_init.c \
+    hal/sdl/hal_kybdmouse.c \
+    hal/sdl/hal_timer.c \
+    hal/sdl/hal_video.c
 
 HEADERS += \
-    timer/timer.h \
-    hal/video_hal_private.h \
+    config_master.h \
     vpu/fonts/bmfonts.h \
     vpu/backend/render.h \
     vpu/backend/video.h \
@@ -27,12 +26,12 @@ HEADERS += \
     vpu/render.h \
     vpu/text.h \
     vpu/video.h \
+    vpu/tests/test_common.h \
     hal/sdl/hal.h \
-    hal/sdl/video_hal_refs.h \
-    hal/sdl/kybdmouse_hal.h \
-    hal/sdl/init_hal.h \
-    config_master.h \
-    vpu/tests/test_common.h
+    hal/sdl/hal_init.h \
+    hal/sdl/hal_kybdmouse.h \
+    hal/sdl/hasl_timer.h \
+    hal/sdl/hal_video_refs.h
 
 LIBS += -lSDL
 

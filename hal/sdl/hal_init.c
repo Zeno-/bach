@@ -1,4 +1,4 @@
-#include "init_hal.h"
+#include "hal_init.h"
 
 #include <SDL/SDL.h>
 #include <stdlib.h>
