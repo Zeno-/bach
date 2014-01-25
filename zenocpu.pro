@@ -14,10 +14,12 @@ SOURCES += \
     hal/sdl/hal_init.c \
     hal/sdl/hal_kybdmouse.c \
     hal/sdl/hal_timer.c \
-    hal/sdl/hal_video.c
+    hal/sdl/hal_video.c \
+    hal/sdl/hal_events.c
 
 HEADERS += \
     config_master.h \
+    common/warn.h \
     vpu/fonts/bmfonts.h \
     vpu/backend/render.h \
     vpu/backend/video.h \
@@ -31,7 +33,9 @@ HEADERS += \
     hal/sdl/hal_init.h \
     hal/sdl/hal_kybdmouse.h \
     hal/sdl/hasl_timer.h \
-    hal/sdl/hal_video_refs.h
+    hal/sdl/hal_video_refs.h \
+    hal/sdl/hal_events.h \
+    common/macros.h
 
 LIBS += -lSDL
 

@@ -3,6 +3,9 @@
 
 #include "config_master.h"
 
+
+#define DEF_EVENTFLAGS (~EVENT_NONE)
+
 #if HAL_INTERFACE == HAL_BACKEND_SDL
 #   include "sdl/hal_init.h"
 #   include "sdl/hal_kybdmouse.h"
