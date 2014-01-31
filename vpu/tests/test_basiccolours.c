@@ -11,7 +11,6 @@
 #include "hal/hal.h"
 #include "vpu/video.h"
 #include "vpu/text.h"
-#include "test_common.h"
 #include "config_master.h"
 
 int main(int argc, char **argv)
@@ -23,11 +22,11 @@ int main(int argc, char **argv)
     VideoSys *vsys;
     struct event e;
 
-    int i, r, c;
-
     struct machine_config cfg = {
        SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0, NULL
     };
+
+    int i, r, c;
 
     mctx = machine_poweron(&cfg);
     vsys = mctx->vsys;

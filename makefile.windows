@@ -25,7 +25,6 @@ OBJECTS := \
     vpu/tests/test_basiccolours.o \
     vpu/tests/test_scroll.o \
     vpu/tests/test_genterrain.o \
-    vpu/tests/test_common.o \
     hal/sdl/hal_init.o \
     hal/sdl/hal_timer.o \
     hal/sdl/video.o \

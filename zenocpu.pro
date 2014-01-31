@@ -10,7 +10,6 @@ SOURCES += \
     vpu/tests/test_basiccolours.c \
     vpu/tests/test_scroll.c \
     vpu/tests/test_genterrain.c \
-    vpu/tests/test_common.c \
     hal/sdl/hal_init.c \
     hal/sdl/hal_timer.c \
     hal/sdl/video.c \
@@ -28,7 +27,6 @@ HEADERS += \
     vpu/render.h \
     vpu/text.h \
     vpu/video.h \
-    vpu/tests/test_common.h \
     hal/sdl/hal.h \
     hal/sdl/hal_init.h \
     hal/sdl/hal_kybdmouse.h \

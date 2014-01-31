@@ -10,7 +10,6 @@
 #include "vpu/video.h"
 #include "vpu/text.h"
 #include "vpu/config.h"
-#include "test_common.h"
 #include "machine.h"
 
 #define ITERATIONS 500
@@ -24,12 +23,17 @@ int main(int argc, char **argv)
     struct machine *mctx;
     VideoSys *vsys;
 
+    struct machine_config cfg = {
+        SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0, NULL
+    };
+
+
     size_t i;
     char str[30];
     uint32_t fgcolour;
     uint32_t altcolour;
 
-    mctx = vput_test_initall();
+    mctx = machine_poweron(&cfg);
     vsys = mctx->vsys;
 
     /* Set/clear scroll flag is set */
