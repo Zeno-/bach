@@ -20,13 +20,13 @@
 /* Round 'n' down to 'd' */
 #define INTCLAMPTO(n,d) ( ((int)((double)(n) / (d))) * (d) )
 
-static void show(double *a, int w, int h);
-static void genterrainmap(void);
+static void show(VideoSys *vctx, double *a, int w, int h);
+static void genterrainmap(VideoSys *vctx, int w, int h);
 static double *genperlinnoise(int w, int h, int octaves);
 static double *genrandarr(int w, int h);
 static double *gensmoothnoise(double *a, int w, int h,
                               double *basenoise, unsigned octave);
-static void show(double *a, int w, int h);
+static void show(VideoSys *vctx, double *a, int w, int h);
 static double interpolate(double x0, double x1, double alpha);
 
 int main(int argc, char **argv)
@@ -50,7 +50,9 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     for (i = 0; i < 10; i++) {
-        genterrainmap();
+        genterrainmap(mctx->vsys,
+                      mctx->vsys->refs.txtlayer->cols,
+                      mctx->vsys->refs.txtlayer->rows);
         sleep(1);
     }
     //getchar();
@@ -60,19 +62,12 @@ int main(int argc, char **argv)
 
 
 static void
-genterrainmap(void)
+genterrainmap(VideoSys *vctx, int w, int h)
 {
-    struct display *scr;
-    int w, h;
-
     double *pnoise;
 
-    scr = vpu_getinstance();
-    w = scr->txt.cols;
-    h = scr->txt.rows;
-
     pnoise = genperlinnoise(w, h, 7);
-    show(pnoise, w, h);
+    show(vctx, pnoise, w, h);
     free(pnoise);
 }
 
@@ -193,13 +188,13 @@ gensmoothnoise(double *a, int w, int h, double *basenoise, unsigned octave)
 }
 
 static void
-show(double *a, int w, int h)
+show(VideoSys *vctx, double *a, int w, int h)
 {
     int r, c, i;
     uint32_t colour;
     char ch;
 
-    vpu_settextattr(vpu_textattr() | VPU_TXTATTRIB_REVERSE);
+    vpu_settextattr(vctx, vpu_textattr(vctx) | VPU_TXTATTRIB_REVERSE);
 
     i = 0;
     for (r = 0; r < h; r++) {
@@ -207,27 +202,31 @@ show(double *a, int w, int h)
 #if OUTPUTCOLOURED == 1
             if (a[i] < 132 / 255.0) {
                 if (a[i] > 125 / 255.0) {
-                    vpu_settextbg(0x00606060);
+                    vpu_settextbg(vctx, 0x00606060);
                     ch =  '.';
-                    colour = vpu_rgbto32(a[i] * 255 * 0.95,
+                    colour = vpu_rgbto32(vctx,
+                                         a[i] * 255 * 0.95,
                                          a[i] * 255,
                                          a[i] * 255 * 0.20);
                 } else {
-                    vpu_settextbg(0x00000000);
+                    vpu_settextbg(vctx, 0x00000000);
                     ch =  ' ';
-                    colour = vpu_rgbto32(0,
+                    colour = vpu_rgbto32(vctx,
+                                         0,
                                          a[i] * 255 * 0.25,
                                          a[i] * 255);
                 }
             } else if (a[i] < 135 / 255.0) {
-                vpu_settextbg(0x00000000);
-                colour = vpu_rgbto32(0,
+                vpu_settextbg(vctx, 0x00000000);
+                colour = vpu_rgbto32(vctx,
+                                     0,
                                      a[i] * 255,
                                      0);
                 ch = '\'';
             } else {
-                vpu_settextbg(0x00000000);
-                colour = vpu_rgbto32(0,
+                vpu_settextbg(vctx, 0x00000000);
+                colour = vpu_rgbto32(vctx,
+                                     0,
                                      a[i] * 255,
                                      0);
                 ch = '"';
@@ -237,11 +236,11 @@ show(double *a, int w, int h)
             ch = ' ';
 #endif
             i++;
-            vpu_putcharat_c(ch, c, r, colour);
+            vpu_putcharat_c(vctx, ch, c, r, colour);
         }
     }
 
-    vpu_refresh(VPU_REFRESH_FORCE);
+    vpu_refresh(vctx, VPU_REFRESH_FORCE);
 }
 
 

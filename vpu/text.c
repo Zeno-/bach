@@ -6,70 +6,70 @@
 #include "vpu/fonts/bmfonts.h"
 #include "common/warn.h"
 
-inline static void restraincx(void);
-inline static void restraincy(void);
+inline static void restraincx(VideoSys *vctx);
+inline static void restraincy(VideoSys *vctx);
 
 uint32_t *
-vpu_txtpixelorigin(uint8_t x, uint8_t y)
+vpu_txtpixelorigin(VideoSys *vctx, uint8_t x, uint8_t y)
 {
     uint32_t *pos;
     unsigned fontheight;
 
-    fontheight = vpurefs->instance->fixedfont->height;
-    pos = vpurefs->pixelmem;
-    pos += vpurefs->txtlayer->origin;
-    pos += vpurefs->instance->w * y * fontheight + x * VPU_FIXED_FONT_WIDTH;
+    fontheight = vctx->disp.fixedfont->height;
+    pos = vctx->refs.pixelmem;
+    pos += vctx->refs.txtlayer->origin;
+    pos += vctx->disp.w * y * fontheight + x * VPU_FIXED_FONT_WIDTH;
 
     return pos;
 }
 
 uint16_t
-vpu_textlayerflags(void)
+vpu_textlayerflags(VideoSys *vctx)
 {
-    return vpurefs->txtlayer->flags;
+    return vctx->refs.txtlayer->flags;
 }
 
 void
-vpu_settextlayerflags(uint16_t flags)
+vpu_settextlayerflags(VideoSys *vctx, uint16_t flags)
 {
-    vpurefs->txtlayer->flags = flags;
+    vctx->refs.txtlayer->flags = flags;
 }
 
 void
-vpu_txtcls(void)
+vpu_txtcls(VideoSys *vctx)
 {
-    vpu_clrtext();
-    vpu_curshome();
+    vpu_clrtext(vctx);
+    vpu_curshome(vctx);
 }
 
 void
-vpu_scrolltexty(void)
+vpu_scrolltexty(VideoSys *vctx)
 {
     uint8_t *src, *dest;
     uint32_t *csrc, *cdest;
 
-    src  = TXTCHPOS(0, 1);
-    dest = TXTCHPOS(0, 0);
+    src  = TXTCHPOS(vctx, 0, 1);
+    dest = TXTCHPOS(vctx, 0, 0);
     memmove(dest,
             src,
-            (vpurefs->txtlayer->charmem_sz - vpurefs->txtlayer->cols)
+            (vctx->refs.txtlayer->charmem_sz - vctx->refs.txtlayer->cols)
                 * sizeof *src);
-    memset(TXTCHPOS(0, vpurefs->txtlayer->rows-1),
+    memset(TXTCHPOS(vctx, 0, vctx->refs.txtlayer->rows-1),
            0,
-           vpurefs->txtlayer->cols);
+           vctx->refs.txtlayer->cols);
 
-    cdest = vpurefs->txt_paramsmem;
-    csrc  = vpurefs->txt_paramsmem + vpurefs->txtlayer->cols;
+    cdest = vctx->refs.txt_paramsmem;
+    csrc  = vctx->refs.txt_paramsmem + vctx->refs.txtlayer->cols;
     memmove(cdest,
             csrc,
-            (vpurefs->txtlayer->params_sz - vpurefs->txtlayer->cols)
+            (vctx->refs.txtlayer->params_sz - vctx->refs.txtlayer->cols)
                 * sizeof *csrc);
-    memset(TXTCOLORPOS(0, vpurefs->txtlayer->rows-1),
-           vpurefs->txtlayer->fgcolour, vpurefs->txtlayer->cols);
-    memset(TXTBGCOLORPOS(0, vpurefs->txtlayer->rows-1),
-           vpurefs->txtlayer->bgcolour, vpurefs->txtlayer->cols);
-    memset(TXTATTRPOS(0, vpurefs->txtlayer->rows-1),
-           vpurefs->txtlayer->attrib, vpurefs->txtlayer->cols);
+    memset(TXTCOLORPOS(vctx, 0, vctx->refs.txtlayer->rows-1),
+           vctx->refs.txtlayer->fgcolour, vctx->refs.txtlayer->cols);
+    memset(TXTBGCOLORPOS(vctx, 0, vctx->refs.txtlayer->rows-1),
+           vctx->refs.txtlayer->bgcolour, vctx->refs.txtlayer->cols);
+    memset(TXTATTRPOS(vctx, 0, vctx->refs.txtlayer->rows-1),
+           vctx->refs.txtlayer->attrib, vctx->refs.txtlayer->cols);
 }
 
 /**************************************************************************
@@ -77,33 +77,33 @@ vpu_scrolltexty(void)
  *************************************************************************/
 
 uint32_t
-vpu_textfg(void)
+vpu_textfg(VideoSys *vctx)
 {
-    return vpurefs->txtlayer->fgcolour;
+    return vctx->refs.txtlayer->fgcolour;
 }
 
 void
-vpu_settextfg(uint32_t newcolour)
+vpu_settextfg(VideoSys *vctx, uint32_t newcolour)
 {
-    vpurefs->txtlayer->fgcolour = newcolour;
+    vctx->refs.txtlayer->fgcolour = newcolour;
 }
 
 void
-vpu_settextbg(uint32_t newcolour)
+vpu_settextbg(VideoSys *vctx, uint32_t newcolour)
 {
-    vpurefs->txtlayer->bgcolour = newcolour;
+    vctx->refs.txtlayer->bgcolour = newcolour;
 }
 
 uint8_t
-vpu_textattr(void)
+vpu_textattr(VideoSys *vctx)
 {
-    return vpurefs->txtlayer->attrib;
+    return vctx->refs.txtlayer->attrib;
 }
 
 void
-vpu_settextattr(uint8_t attr)
+vpu_settextattr(VideoSys *vctx, uint8_t attr)
 {
-    vpurefs->txtlayer->attrib = attr;
+    vctx->refs.txtlayer->attrib = attr;
 }
 
 /**************************************************************************
@@ -111,72 +111,73 @@ vpu_settextattr(uint8_t attr)
  *************************************************************************/
 
 void
-vpu_putchar(int ch)
+vpu_putchar(VideoSys *vctx, int ch)
 {
-    vpu_putchar_c(ch, vpurefs->txtlayer->fgcolour);
+    vpu_putchar_c(vctx, ch, vctx->refs.txtlayer->fgcolour);
 }
 
 void
-vpu_putchar_c(int ch, uint32_t colour)
+vpu_putchar_c(VideoSys *vctx, int ch, uint32_t colour)
 {
-    vpu_putcharat_c(ch, vpurefs->txtlayer->cursx, vpurefs->txtlayer->cursy,
+    vpu_putcharat_c(vctx, ch,
+                    vctx->refs.txtlayer->cursx, vctx->refs.txtlayer->cursy,
                     colour);
-    vpu_cursadvance();
+    vpu_cursadvance(vctx);
 }
 
 void
-vpu_puts(const char *s)
+vpu_puts(VideoSys *vctx, const char *s)
 {
-    vpu_puts_c(s, vpurefs->txtlayer->fgcolour);
+    vpu_puts_c(vctx, s, vctx->refs.txtlayer->fgcolour);
 }
 
 void
-vpu_puts_c(const char *s, uint32_t colour)
+vpu_puts_c(VideoSys *vctx, const char *s, uint32_t colour)
 {
     int ch;
     while ((ch = *s++)) {
         switch(ch) {
             case '\n':
-                vpu_cursnewline();
+                vpu_cursnewline(vctx);
                 break;
             case '\t':
-                vpu_puttab_c(colour);
+                vpu_puttab_c(vctx, colour);
                 break;
             default:
-                vpu_putchar_c(ch, colour);
+                vpu_putchar_c(vctx, ch, colour);
                 break;
         }
     }
 }
 
 void
-vpu_puttab(void)
+vpu_puttab(VideoSys *vctx)
 {
-    vpu_puttab_c(vpurefs->txtlayer->fgcolour);
+    vpu_puttab_c(vctx, vctx->refs.txtlayer->fgcolour);
 }
 
 void
-vpu_puttab_c(uint32_t colour)
+vpu_puttab_c(VideoSys *vctx, uint32_t colour)
 {
     int i;
     for (i = 0; i < TXTBUFF_TABWIDTH; i++) {
-        vpu_putchar_c(' ', colour);
+        vpu_putchar_c(vctx, ' ', colour);
     }
 }
 
 void
-vpu_putcharat(int ch, uint8_t x, uint8_t y)
+vpu_putcharat(VideoSys *vctx, int ch, uint8_t x, uint8_t y)
 {
-    vpu_putcharat_c(ch, x, y, vpurefs->txtlayer->fgcolour);
+    vpu_putcharat_c(vctx, ch, x, y, vctx->refs.txtlayer->fgcolour);
 }
 
 void
-vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour)
+vpu_putcharat_c(VideoSys *vctx, int ch, uint8_t x, uint8_t y, uint32_t colour)
 {
-    *TXTCHPOS(x, y) = ch;
-    *TXTCOLORPOS(x, y) = colour;
-    *TXTBGCOLORPOS(x, y) = vpurefs->txtlayer->bgcolour;
-    *TXTATTRPOS(x, y) = vpurefs->txtlayer->attrib;
+    *TXTCHPOS(vctx, x, y) = ch;
+    *TXTCOLORPOS(vctx, x, y) = colour;
+    *TXTBGCOLORPOS(vctx, x, y) = vctx->refs.txtlayer->bgcolour;
+    *TXTATTRPOS(vctx, x, y) = vctx->refs.txtlayer->attrib;
 }
 
 /**************************************************************************
@@ -184,44 +185,44 @@ vpu_putcharat_c(int ch, uint8_t x, uint8_t y, uint32_t colour)
  *************************************************************************/
 
 void
-vpu_curssetpos(uint8_t x, uint8_t y)
+vpu_curssetpos(VideoSys *vctx, uint8_t x, uint8_t y)
 {
-    vpurefs->txtlayer->cursx = x;
-    vpurefs->txtlayer->cursy = y;
+    vctx->refs.txtlayer->cursx = x;
+    vctx->refs.txtlayer->cursy = y;
 }
 
 void
-vpu_curssetposrel(int x, int y)
+vpu_curssetposrel(VideoSys *vctx, int x, int y)
 {
-    vpurefs->txtlayer->cursx += x;
-    vpurefs->txtlayer->cursy += y;
-    restraincx();
-    restraincy();
+    vctx->refs.txtlayer->cursx += x;
+    vctx->refs.txtlayer->cursy += y;
+    restraincx(vctx);
+    restraincy(vctx);
 }
 
 void
-vpu_curshome(void)
+vpu_curshome(VideoSys *vctx)
 {
-    vpurefs->txtlayer->cursx = 0;
+    vctx->refs.txtlayer->cursx = 0;
 }
 
 void
-vpu_cursadvance(void)
+vpu_cursadvance(VideoSys *vctx)
 {
-    vpurefs->txtlayer->cursx++;
-    if (vpurefs->txtlayer->cursx >= vpurefs->txtlayer->cols)
-        vpurefs->txtlayer->cursx = 0;
+    vctx->refs.txtlayer->cursx++;
+    if (vctx->refs.txtlayer->cursx >= vctx->refs.txtlayer->cols)
+        vctx->refs.txtlayer->cursx = 0;
 }
 
 void
-vpu_cursnewline(void)
+vpu_cursnewline(VideoSys *vctx)
 {
-    vpurefs->txtlayer->cursx = 0;
-    vpurefs->txtlayer->cursy++;
-    if  (vpurefs->txtlayer->cursy >= vpurefs->txtlayer->rows) {
-        vpurefs->txtlayer->cursy--;
-        if (vpurefs->txtlayer->flags & VPU_TXTAUTOSCROLL)
-            vpu_scrolltexty();
+    vctx->refs.txtlayer->cursx = 0;
+    vctx->refs.txtlayer->cursy++;
+    if  (vctx->refs.txtlayer->cursy >= vctx->refs.txtlayer->rows) {
+        vctx->refs.txtlayer->cursy--;
+        if (vctx->refs.txtlayer->flags & VPU_TXTAUTOSCROLL)
+            vpu_scrolltexty(vctx);
     }
 }
 
@@ -230,19 +231,19 @@ vpu_cursnewline(void)
  *************************************************************************/
 
 inline static void
-restraincx(void)
+restraincx(VideoSys *vctx)
 {
-    if (vpurefs->txtlayer->cursx < 0)
-        vpurefs->txtlayer->cursx = 0;
-    else if (vpurefs->txtlayer->cursx >= vpurefs->txtlayer->cols)
-        vpurefs->txtlayer->cursx = vpurefs->txtlayer->cols - 1;
+    if (vctx->refs.txtlayer->cursx < 0)
+        vctx->refs.txtlayer->cursx = 0;
+    else if (vctx->refs.txtlayer->cursx >= vctx->refs.txtlayer->cols)
+        vctx->refs.txtlayer->cursx = vctx->refs.txtlayer->cols - 1;
 }
 
 inline static void
-restraincy(void)
+restraincy(VideoSys *vctx)
 {
-    if (vpurefs->txtlayer->cursy < 0)
-        vpurefs->txtlayer->cursy = 0;
-    if (vpurefs->txtlayer->cursy >= vpurefs->txtlayer->rows)
-        vpurefs->txtlayer->cursy = vpurefs->txtlayer->rows;
+    if (vctx->refs.txtlayer->cursy < 0)
+        vctx->refs.txtlayer->cursy = 0;
+    if (vctx->refs.txtlayer->cursy >= vctx->refs.txtlayer->rows)
+        vctx->refs.txtlayer->cursy = vctx->refs.txtlayer->rows;
 }

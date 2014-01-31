@@ -3,9 +3,9 @@
 
 #define DEFAULT_CHFONT      vidfont8x14
 
-#define VTXT_DEF_FGCOLOUR   ( vpu_rgbto32(0xC0, 0xC0, 0xC0) )
-#define VTXT_DEF_BGCOLOUR   ( vpu_rgbto32(0x00, 0x00, 0x00) )
-#define VGFX_DEF_BGCOLOUR   ( vpu_rgbto32(0x00, 0x00, 0x00) )
+#define VTXT_DEF_FGCOLOUR(v)   ( vpu_rgbto32((v), 0xC0, 0xC0, 0xC0) )
+#define VTXT_DEF_BGCOLOUR(v)   ( vpu_rgbto32((v), 0x00, 0x00, 0x00) )
+#define VGFX_DEF_BGCOLOUR(v)   ( vpu_rgbto32((v), 0x00, 0x00, 0x00) )
 
 #define VTXT_DEF_TEXTFLAGS  ( VPU_TXTAUTOSCROLL | VPU_TXTLAYERVISIBLE )
 

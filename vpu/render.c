@@ -7,10 +7,11 @@
 #include "vpu/fonts/bmfonts.h"
 #include "text.h"
 
-static void blitglyph(int ch, uint32_t *dest,
+static void blitglyph(VideoSys *vctx,
+                      int ch, uint32_t *dest,
                       uint32_t fgcolour, uint32_t bgcolour, uint32_t attr);
 
-void vpu_refresh_tlayer(void)
+void vpu_refresh_tlayer(VideoSys *vctx)
 {
     uint32_t *dest;
     const uint8_t  *currchval;
@@ -18,36 +19,36 @@ void vpu_refresh_tlayer(void)
     unsigned r, c, xdelta, ydelta;
     unsigned nrows, ncols;
 
-    if (!(vpurefs->txtlayer->flags & VPU_TXTLAYERVISIBLE))
+    if (!(vctx->refs.txtlayer->flags & VPU_TXTLAYERVISIBLE))
         return;
 
-    vpu_direct_write_start();
+    vpu_direct_write_start(vctx);
 
-    dest = vpurefs->pixelmem + vpurefs->txtlayer->origin;
+    dest = vctx->refs.pixelmem + vctx->refs.txtlayer->origin;
 
     xdelta = VPU_FIXED_FONT_WIDTH;
-    ydelta = vpurefs->instance->w * (vpurefs->instance->fixedfont->height - 1);
+    ydelta = vctx->disp.w * (vctx->disp.fixedfont->height - 1);
 
-    nrows = vpurefs->txtlayer->rows;
-    ncols = vpurefs->txtlayer->cols;
+    nrows = vctx->refs.txtlayer->rows;
+    ncols = vctx->refs.txtlayer->cols;
 
-    currchval = vpurefs->txt_charmem;
-    fgcp = TXTCOLORPOS(0,0);
-    bgcp = TXTBGCOLORPOS(0,0);
-    atrp = TXTATTRPOS(0,0);
+    currchval = vctx->refs.txt_charmem;
+    fgcp = TXTCOLORPOS(vctx, 0, 0);
+    bgcp = TXTBGCOLORPOS(vctx, 0, 0);
+    atrp = TXTATTRPOS(vctx, 0, 0);
 
     for (r = 0; r < nrows; r++) {
         for (c = 0; c < ncols; c++) {
-            blitglyph(*currchval++, dest, *fgcp++, *bgcp++, *atrp++);
+            blitglyph(vctx, *currchval++, dest, *fgcp++, *bgcp++, *atrp++);
             dest += xdelta;
         }
         dest += ydelta;
     }
 
-    vpu_direct_write_end();
+    vpu_direct_write_end(vctx);
 }
 
-static void blitglyph(int ch, uint32_t *dest,
+static void blitglyph(VideoSys *vctx, int ch, uint32_t *dest,
                       uint32_t fgcolour, uint32_t bgcolour, uint32_t attr)
 {
     unsigned fontheight, mask;
@@ -57,12 +58,12 @@ static void blitglyph(int ch, uint32_t *dest,
     uint32_t *destrow;
     unsigned destdelta;
 
-    glyph = vpurefs->instance->fixedfont->pixeldata
-            + ch * vpurefs->instance->fixedfont->height;
+    glyph = vctx->disp.fixedfont->pixeldata
+            + ch * vctx->disp.fixedfont->height;
 
-    fontheight = vpurefs->instance->fixedfont->height;
+    fontheight = vctx->disp.fixedfont->height;
 
-    destdelta = vpurefs->txtlayer->cols * VPU_FIXED_FONT_WIDTH;
+    destdelta = vctx->refs.txtlayer->cols * VPU_FIXED_FONT_WIDTH;
     destrow = dest;
 
     for (i = 0; i < fontheight; i++) {

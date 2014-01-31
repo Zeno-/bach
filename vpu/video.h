@@ -6,6 +6,8 @@
 
 #include "hal/hal.h"
 
+#define VID_MAX_VERSIONINFO_LEN 128
+
 enum vpuerror {
     VPU_ERR_NONE,
     VPU_ERR_INITFAIL,
@@ -27,6 +29,20 @@ enum vpu_refreshaction {
     VPU_REFRESH_NORMAL  = 0,
     VPU_REFRESH_FORCE   = 1,
     VPU_REFRESH_COMMITONLY     = 2
+};
+
+struct display_privdata;
+
+struct vpu_refs {
+
+    struct txtlayer *txtlayer;
+
+    uint32_t *pixelmem;
+    uint8_t  *txt_charmem;
+    uint32_t *txt_paramsmem;
+    uint32_t *txt_fgcolormem;
+    uint32_t *txt_bgcolormem;
+    uint32_t *txt_attrmem;
 };
 
 struct txtlayer {
@@ -55,47 +71,52 @@ struct display {
     unsigned w, h;              /* Dimensions of the pixel display */
 
     struct txtlayer txt;
-
-    void *pdata;                /* Private */
 };
 
-struct vpu_refs{
-    struct display *instance;
-    struct txtlayer *txtlayer;
-
-    uint32_t *pixelmem;
-    uint8_t  *txt_charmem;
-    uint32_t *txt_paramsmem;
-    uint32_t *txt_fgcolormem;
-    uint32_t *txt_bgcolormem;
-    uint32_t *txt_attrmem;
+struct fpstimer {
+    uint32_t prevtick;
+    uint16_t tickInterval;
 };
 
-extern const struct vpu_refs *vpurefs;
+struct vpu_context {
+    struct display disp;
+
+    struct fpstimer fpsctx;
+
+    char backendstr[VID_MAX_VERSIONINFO_LEN];
+
+    struct vpu_refs refs;
+
+    struct display_privdata *pdata;                /* Private */
+};
+
+typedef struct vpu_context VideoSys;
 
 /* fullscreen: 0 = Windowed, 1 = fullscreen
  * font: NULL = Use default
  */
-enum vpuerror vpu_init(unsigned w, unsigned h, int fullscreen,
-                       const struct vidfont8 *font);
-void vpu_cleanup(void);
+VideoSys *vpu_init(unsigned w, unsigned h, int fullscreen,
+                   const struct vidfont8 *font,
+                   enum vpuerror *err);
 
-const char *vpu_backendinfostr(void);
-struct display *vpu_getinstance(void);
+void vpu_cleanup(VideoSys *vctx);
+
+const char *vpu_backendinfostr(VideoSys *vctx);
 
 /* Returns 0 if interval since prev refresh is less than fps
  * interval. i.e. to limit framerate there is no need to refresh
  * the screen if this functions returns 0.
  */
-int vpu_shouldrefresh(void);
+int vpu_shouldrefresh(VideoSys *vctx);
 
-void vpu_refresh(enum vpu_refreshaction action);
-void vpu_clrdisplay(void);
-void vpu_clrtext(void);
+void vpu_refresh(VideoSys *vctx, enum vpu_refreshaction action);
+void vpu_clrdisplay(VideoSys *vctx);
+void vpu_clrtext(VideoSys *vctx);
 
-void vpu_direct_write_start(void);
-void vpu_direct_write_end(void);
+void vpu_direct_write_start(VideoSys *vctx);
+void vpu_direct_write_end(VideoSys *vctx);
 
-uint32_t vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b);
+uint32_t vpu_rgbto32(VideoSys *vctx,
+                     unsigned char r, unsigned char g, unsigned char b);
 
 #endif /* ZVM_VIDEO_H */

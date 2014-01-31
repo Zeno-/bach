@@ -2,9 +2,11 @@
 #define ZPU_MACHINE_H
 
 #include "hal/hal.h"
+#include "vpu/video.h"
 
 struct machine {
     EventSys *esys;
+    VideoSys *vsys;
 };
 
 struct machine_config {

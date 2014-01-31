@@ -11,102 +11,92 @@
 #include "vpu/config.h"
 #include "vpu/render.h"
 
-#define MAX_VERSIONINFO_LEN 128
+#define VID_PRV_SURFACE(v)  ((v)->pdata->vidsurface)
 
-#define VID_PRV_SURFACE     (vpu_pdata_prv.vidsurface)
+static void initexports(VideoSys *vctx);
+static enum vpuerror initscr(VideoSys *vctx, unsigned w, unsigned h,
+                             int fullscreen);
+static void setbackendinfo(VideoSys *vctx);
+static void setfixedfont(VideoSys *vctx, const struct vidfont8 *font);
 
-struct fpsctx {
-    uint32_t prevtick;
-    uint16_t tickInterval;
-};
-
-struct display vpu_prv;                     // FIXME (global)
-struct display_privdata vpu_pdata_prv;      // FIXME (global)
-
-static struct fpsctx fpstimer;
-static char backendstr[MAX_VERSIONINFO_LEN];
-
-static void initexports(void);
-static enum vpuerror initscr(unsigned w, unsigned h, int fullscreen);
-static void setbackendinfo(void);
-static void setfixedfont(struct display *screen,
-                         const struct vidfont8 *font);
-
-static enum vpuerror inittextsys(const struct vidfont8 *font);
-static void cleanuptextsys(void);
-static void initfpstimer(int fpslimit);
-
-/**************************************************************************
- * Public exported refs/pointers
- *************************************************************************/
-
-static struct vpu_refs vpurefs_p;               // FIXME (global)
-const struct vpu_refs *vpurefs = &vpurefs_p;    // FIXME (global)
+static enum vpuerror inittextsys(VideoSys *vctx,
+                                 const struct vidfont8 *font);
+static void cleanuptextsys(VideoSys *vctx);
+static void initfpstimer(VideoSys *vctx, int fpslimit);
 
 /**************************************************************************
  * Public
  *************************************************************************/
 
-enum vpuerror
-vpu_init(unsigned w, unsigned h, int fullscreen,
-         const struct vidfont8 *font)
+VideoSys *vpu_init(unsigned w, unsigned h, int fullscreen,
+                   const struct vidfont8 *font,
+                   enum vpuerror *err)
 {
-    enum vpuerror err;
+    enum vpuerror err_temp;
+    VideoSys *vctx;
 
     if (!hal_isinitalised()) {
         fputs("Error: Hardware Abstraction Layer not initialised.\n",
               stderr);
-        return VPU_ERR_INITFAIL;
+        if (err)
+            *err = VPU_ERR_INITFAIL;
+        return NULL;
     }
 
-    if ((err = initscr(w, h, fullscreen)) != VPU_ERR_NONE)
-        return err;
+    if ((vctx = calloc (1, sizeof *vctx)) == NULL) {
+        if (err)
+            *err = VPU_ERR_INITMEMFAIL;
+        return NULL;
+    }
 
-    /* If the basic VPU system is running, then it has to be cleaned up
-     * at exit; other init functions after this point may fail, but the
-     * basic cleanup for those before this line must be done, so add the
-     * atexit() now.
-     */
-    atexit(vpu_cleanup);
+    if ((err_temp = initscr(vctx, w, h, fullscreen)) != VPU_ERR_NONE) {
+        if (err)
+            *err = err_temp;
+        return NULL;
+    }
 
-    initfpstimer(VPU_FPSLIMIT);
+    initfpstimer(vctx, VPU_FPSLIMIT);
 
-    if ((err = inittextsys(font) != VPU_ERR_NONE))
-        return err;
+    if ((err_temp = inittextsys(vctx, font) != VPU_ERR_NONE)) {
+        vpu_cleanup(vctx);
+        return NULL;
+    }
 
-    initexports();
-    vpu_clrtext();
+    initexports(vctx);
+    vpu_clrtext(vctx);
 
-    setbackendinfo();
+    setbackendinfo(vctx);
 
-    return VPU_ERR_NONE;
+    return vctx;
 }
 
 void
-vpu_cleanup(void)
+vpu_cleanup(VideoSys *vctx)
 {
-    cleanuptextsys();
+    if (!vctx)
+        return;
+
+    free (vctx->pdata);
+    vctx->pdata = NULL;
+
+    cleanuptextsys(vctx);
+
+    free (vctx);
 }
 
 const char *
-vpu_backendinfostr(void)
+vpu_backendinfostr(VideoSys *vctx)
 {
-    return backendstr;
-}
-
-struct display
-*vpu_getinstance(void)
-{
-    return &vpu_prv;
+    return vctx->backendstr;
 }
 
 int
-vpu_shouldrefresh(void)
+vpu_shouldrefresh(VideoSys *vctx)
 {
     uint32_t currtick, expected;
-    struct fpsctx *t;
+    struct fpstimer *t;
 
-    t = &fpstimer;
+    t = &vctx->fpsctx;
 
     /* Remember that everything is unsigned; i.e. don't use subtraction
      * unless certain that it won't cause an underflow
@@ -123,55 +113,56 @@ vpu_shouldrefresh(void)
 
 
 void
-vpu_refresh(enum vpu_refreshaction action)
+vpu_refresh(VideoSys *vctx, enum vpu_refreshaction action)
 {
-    if (!vpu_shouldrefresh()
+    if (!vpu_shouldrefresh(vctx)
             && action != VPU_REFRESH_FORCE
             && action != VPU_REFRESH_COMMITONLY)
         return;
-    vpu_refresh_tlayer();
+    vpu_refresh_tlayer(vctx);
     if (action != VPU_REFRESH_COMMITONLY)
-        SDL_Flip(VID_PRV_SURFACE);
+        SDL_Flip(VID_PRV_SURFACE(vctx));
 }
 
 void
-vpu_clrdisplay(void)
+vpu_clrdisplay(VideoSys *vctx)
 {
-    SDL_Surface *surface = VID_PRV_SURFACE;
+    SDL_Surface *surface = VID_PRV_SURFACE(vctx);
 
     // FIXME: the background colour should be modifiable
-    SDL_FillRect(surface, NULL, VGFX_DEF_BGCOLOUR);
+    SDL_FillRect(surface, NULL, VGFX_DEF_BGCOLOUR(vctx));
 }
 
 void
-vpu_clrtext(void)
+vpu_clrtext(VideoSys *vctx)
 {
-    memset(vpurefs->txt_charmem, 0, vpurefs->txtlayer->charmem_sz);
-    memset(vpurefs->txt_fgcolormem,
-           vpurefs->txtlayer->fgcolour,
-           sizeof vpurefs->txtlayer->fgcolour * vpurefs->txtlayer->cnum);
-    memset(vpurefs->txt_bgcolormem,
-           vpurefs->txtlayer->bgcolour,
-           sizeof vpurefs->txtlayer->bgcolour * vpurefs->txtlayer->cnum);
-    memset(vpurefs->txt_attrmem,
-           vpurefs->txtlayer->attrib,
-           sizeof vpurefs->txtlayer->attrib * vpurefs->txtlayer->cnum);
+    memset(vctx->refs.txt_charmem, 0, vctx->refs.txtlayer->charmem_sz);
+    memset(vctx->refs.txt_fgcolormem,
+           vctx->refs.txtlayer->fgcolour,
+           sizeof vctx->refs.txtlayer->fgcolour * vctx->refs.txtlayer->cnum);
+    memset(vctx->refs.txt_bgcolormem,
+           vctx->refs.txtlayer->bgcolour,
+           sizeof vctx->refs.txtlayer->bgcolour * vctx->refs.txtlayer->cnum);
+    memset(vctx->refs.txt_attrmem,
+           vctx->refs.txtlayer->attrib,
+           sizeof vctx->refs.txtlayer->attrib * vctx->refs.txtlayer->cnum);
 }
 
-void vpu_direct_write_start(void)
+void vpu_direct_write_start(VideoSys *vctx)
 {
-    SDL_LockSurface(VID_PRV_SURFACE);
+    SDL_LockSurface(VID_PRV_SURFACE(vctx));
 }
 
-void vpu_direct_write_end(void)
+void vpu_direct_write_end(VideoSys *vctx)
 {
-  SDL_UnlockSurface(VID_PRV_SURFACE);
+  SDL_UnlockSurface(VID_PRV_SURFACE(vctx));
 }
 
 uint32_t
-vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b)
+vpu_rgbto32(VideoSys *vctx,
+            unsigned char r, unsigned char g, unsigned char b)
 {
-    SDL_Surface *surface = VID_PRV_SURFACE;
+    SDL_Surface *surface = VID_PRV_SURFACE(vctx);
     return SDL_MapRGB(surface->format, r, g, b);
 }
 
@@ -180,24 +171,26 @@ vpu_rgbto32(unsigned char r, unsigned char g, unsigned char b)
  *************************************************************************/
 
 static void
-initexports(void)
+initexports(VideoSys *vctx)
 {
-    vpurefs_p.instance          = &vpu_prv;
-    vpurefs_p.txtlayer          = &vpu_prv.txt;
+    vctx->refs.txtlayer          = &vctx->disp.txt;
 
-    vpurefs_p.pixelmem          = vpu_pdata_prv.vpixels;
-    vpurefs_p.txt_charmem       = vpu_prv.txt.charmem;
-    vpurefs_p.txt_paramsmem     = vpu_prv.txt.params;
-    vpurefs_p.txt_fgcolormem    = vpu_prv.txt.params;
-    vpurefs_p.txt_bgcolormem    = vpu_prv.txt.params + vpu_prv.txt.cnum;
-    vpurefs_p.txt_attrmem       = vpu_prv.txt.params + vpu_prv.txt.cnum * 2;
+    vctx->refs.pixelmem          = vctx->pdata->vidsurface->pixels;
+    vctx->refs.txt_charmem       = vctx->disp.txt.charmem;
+    vctx->refs.txt_paramsmem     = vctx->disp.txt.params;
+    vctx->refs.txt_fgcolormem    = vctx->disp.txt.params;
+    vctx->refs.txt_bgcolormem    = vctx->disp.txt.params
+                                    + vctx->disp.txt.cnum;
+    vctx->refs.txt_attrmem       = vctx->disp.txt.params
+                                    + vctx->disp.txt.cnum * 2;
 }
 
 static enum vpuerror
-initscr(unsigned w, unsigned h, int fullscreen)
+initscr(VideoSys *vctx, unsigned w, unsigned h, int fullscreen)
 {
     SDL_Surface* surface;
     unsigned flags;
+    struct display_privdata *pdata;
 
     /* Make sure width and height are multiples of 8 */
     w = (w >> 3) << 3;
@@ -207,64 +200,66 @@ initscr(unsigned w, unsigned h, int fullscreen)
     if ((surface = SDL_SetVideoMode(w, h, 32, flags)) == NULL)
         return VPU_ERR_VMODEFAIL;
 
-    vpu_prv.pdata = &vpu_pdata_prv;
-    vpu_pdata_prv.vidsurface = surface;
-    vpu_pdata_prv.vpixels = surface->pixels;
+    if((pdata = malloc(sizeof *pdata)) == NULL)
+        return VPU_ERR_INITMEMFAIL;
 
-    vpu_prv.w = w;
-    vpu_prv.h = h;
-    vpu_prv.txt.fgcolour = VTXT_DEF_FGCOLOUR;
-    vpu_prv.txt.bgcolour = VTXT_DEF_BGCOLOUR;
-    vpu_prv.txt.attrib   = 0;
+    pdata->vidsurface = surface;
+    vctx->pdata = pdata;
+
+    vctx->disp.w = w;
+    vctx->disp.h = h;
+    vctx->disp.txt.fgcolour = VTXT_DEF_FGCOLOUR(vctx);
+    vctx->disp.txt.bgcolour = VTXT_DEF_BGCOLOUR(vctx);
+    vctx->disp.txt.attrib   = 0;
 
     return VPU_ERR_NONE;
 }
 
 static void
-setbackendinfo(void)
+setbackendinfo(VideoSys *vctx)
 {
 
     SDL_version compiled;
 
     SDL_VERSION(&compiled);
 
-    snprintf(backendstr, MAX_VERSIONINFO_LEN,
+    snprintf(vctx->backendstr, VID_MAX_VERSIONINFO_LEN,
              "Backend using SDL %u.%u.%u",
              compiled.major, compiled.minor, compiled.patch);
 }
 
 static void
-setfixedfont(struct display *screen, const struct vidfont8 *font)
+setfixedfont(VideoSys *vctx, const struct vidfont8 *font)
 {
     uint32_t extra_xpx, extra_ypx;
 
-    screen->fixedfont = font;
-    screen->txt.cols = screen->w / VPU_FIXED_FONT_WIDTH;
-    screen->txt.rows = screen->h / screen->fixedfont->height;
-    screen->txt.charmem_sz = screen->txt.cols * screen->txt.rows;
-    screen->txt.cnum = screen->txt.charmem_sz;
-    screen->txt.params_sz = screen->txt.cnum * 3;
+    vctx->disp.fixedfont = font;
+    vctx->disp.txt.cols = vctx->disp.w / VPU_FIXED_FONT_WIDTH;
+    vctx->disp.txt.rows = vctx->disp.h / vctx->disp.fixedfont->height;
+    vctx->disp.txt.charmem_sz = vctx->disp.txt.cols * vctx->disp.txt.rows;
+    vctx->disp.txt.cnum = vctx->disp.txt.charmem_sz;
+    vctx->disp.txt.params_sz = vctx->disp.txt.cnum * 3;
 
     /* Centre text "window" on screen; i.e. dertemine upper-left pixel of
      * the text display
      */
-    extra_xpx = (screen->w % screen->txt.cols) / 2;
-    extra_ypx = (screen->h % screen->txt.rows) / 2;
-    screen->txt.origin = extra_xpx + extra_ypx * screen->w;
+    extra_xpx = (vctx->disp.w % vctx->disp.txt.cols) / 2;
+    extra_ypx = (vctx->disp.h % vctx->disp.txt.rows) / 2;
+    vctx->disp.txt.origin = extra_xpx + extra_ypx * vctx->disp.w;
 }
 
 static enum vpuerror
-inittextsys(const struct vidfont8 *font)
+inittextsys(VideoSys *vctx, const struct vidfont8 *font)
 {
     size_t ccount, pmemreq;
     unsigned ok;
 
-    vpu_prv.txt.flags = VTXT_DEF_TEXTFLAGS;
+    vctx->disp.txt.flags = VTXT_DEF_TEXTFLAGS;
 
-    setfixedfont(&vpu_prv, font != NULL ? font : &DEFAULT_CHFONT);
+    setfixedfont(vctx, font != NULL ? font : &DEFAULT_CHFONT);
 
-    ccount  = vpu_prv.txt.charmem_sz;
-    pmemreq = vpu_prv.txt.params_sz * sizeof *vpu_prv.txt.params;
+    ccount  = vctx->disp.txt.charmem_sz;
+    pmemreq = vctx->disp.txt.params_sz * sizeof *vctx->disp.txt.params;
 
     /*****************************************************
      *
@@ -285,12 +280,12 @@ inittextsys(const struct vidfont8 *font)
      *          Lower 8-bits:   attribute flags
      */
 
-    ok  = ( vpu_prv.txt.charmem
-            = malloc(ccount * sizeof *vpu_prv.txt.charmem) ) != NULL;
-    ok &= ( vpu_prv.txt.params = malloc(pmemreq) ) != NULL;
+    ok  = ( vctx->disp.txt.charmem
+            = malloc(ccount * sizeof *vctx->disp.txt.charmem) ) != NULL;
+    ok &= ( vctx->disp.txt.params = malloc(pmemreq) ) != NULL;
 
     if (!ok) {
-        cleanuptextsys();
+        cleanuptextsys(vctx);
         return VPU_ERR_INITMEMFAIL;
     }
 
@@ -298,18 +293,21 @@ inittextsys(const struct vidfont8 *font)
 }
 
 static void
-cleanuptextsys(void)
+cleanuptextsys(VideoSys *vctx)
 {
-    free(vpu_prv.txt.params);
-    free(vpu_prv.txt.charmem);
+    if (!vctx)
+        return;
 
-    vpu_prv.txt.params    = NULL;
-    vpu_prv.txt.charmem   = NULL;
+    free(vctx->disp.txt.params);
+    free(vctx->disp.txt.charmem);
+
+    vctx->disp.txt.params    = NULL;
+    vctx->disp.txt.charmem   = NULL;
 }
 
 static void
-initfpstimer(int fpslimit)
+initfpstimer(VideoSys *vctx, int fpslimit)
 {
-    fpstimer.prevtick  = SDL_GetTicks();
-    fpstimer.tickInterval = 1000/fpslimit;
+    vctx->fpsctx.prevtick  = SDL_GetTicks();
+    vctx->fpsctx.tickInterval = 1000/fpslimit;
 }

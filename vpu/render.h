@@ -1,6 +1,8 @@
 #ifndef VPU_RENDER_H
 #define VPU_RENDER_H
 
-void vpu_refresh_tlayer(void);
+#include <vpu/video.h>
+
+void vpu_refresh_tlayer(VideoSys *vctx);
 
 #endif /* VPU_RENDER_H */

@@ -2,14 +2,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "vpu/video.h"
 
 inline static void cleanup(struct machine *mctx);
 
 struct machine *
 machine_poweron(const struct machine_config *cfg)
 {
-    enum eventsyserr err;
+    enum eventsyserr e_err;
+    enum vpuerror v_err;
+
     struct machine *m;
 
     if ((m = calloc(1, sizeof *m)) == NULL)
@@ -21,16 +22,17 @@ machine_poweron(const struct machine_config *cfg)
         exit(1);
     }
 
-    if ((m->esys = evsys_initeventsys(DEF_EVENTFLAGS, &err)) == NULL) {
+    if ((m->esys = evsys_initeventsys(DEF_EVENTFLAGS, &e_err)) == NULL) {
         fputs("Could not init event subsystem. Aborting.\n", stderr);
         cleanup(m);
         exit(1);
     }
 
-    if (vpu_init(cfg->video_pix_w,
+    if ((m->vsys = vpu_init(cfg->video_pix_w,
                  cfg->video_pix_h,
                  cfg->fullscreen,
-                 cfg->font) != VPU_ERR_NONE) {
+                 cfg->font,
+                 &v_err)) == NULL) {
         cleanup(m);
         fputs("Could not init VPU. Aborting.\n", stderr);
         exit(1);
@@ -49,7 +51,14 @@ machine_poweroff(struct machine *mctx)
 inline static void
 cleanup(struct machine *mctx)
 {
-    evsys_stopeventsys(mctx->esys);
-    mctx->esys = NULL;
+    if (mctx->esys) {
+        evsys_stopeventsys(mctx->esys);
+        mctx->esys = NULL;
+    }
+    if (mctx->vsys) {
+        vpu_cleanup(mctx->vsys);
+        mctx->vsys = NULL;
+    }
+
     free(mctx);
 }
