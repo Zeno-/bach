@@ -10,15 +10,22 @@
     ...
     obj:*libX11*
 }
-{
-    <insert_a_suppression_name_here>
-    Memcheck:Leak
-    ...
-    obj:*libSDL*
-}
+
 {
     <insert_a_suppression_name_here>
     Memcheck:Leak
     ...
     fun:_dl_open
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Leak
+    ...
+    fun:SDL_VideoInit
+}
+{
+    <insert_a_suppression_name_here>
+    Memcheck:Leak
+    ...
+    fun:SDL_VideoQuit
 }
