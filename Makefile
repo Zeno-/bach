@@ -24,9 +24,10 @@ OBJECTS := \
     vpu/tests/test_genterrain.o \
     vpu/tests/test_common.o \
     hal/sdl/hal_init.o \
-    hal/sdl/hal_kybdmouse.o \
     hal/sdl/hal_timer.o \
-    hal/sdl/hal_video.o
+    hal/sdl/video.o \
+    hal/sdl/hal_events.o \
+    machine.o
 .c.o:
 	$(CC) -o $@ -c $(CFLAGS) $<
 

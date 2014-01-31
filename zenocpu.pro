@@ -12,9 +12,8 @@ SOURCES += \
     vpu/tests/test_genterrain.c \
     vpu/tests/test_common.c \
     hal/sdl/hal_init.c \
-    hal/sdl/hal_kybdmouse.c \
     hal/sdl/hal_timer.c \
-    hal/sdl/hal_video.c \
+    hal/sdl/video.c \
     hal/sdl/hal_events.c \
     machine.c
 
