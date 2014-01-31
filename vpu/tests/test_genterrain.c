@@ -22,9 +22,10 @@
 
 static void show(VideoSys *vctx, double *a, int w, int h);
 static void genterrainmap(VideoSys *vctx, int w, int h);
-static double *genperlinnoise(int w, int h, int octaves);
+static double *genperlinnoise(VideoSys *vctx, int w, int h, int octaves);
 static double *genrandarr(int w, int h);
-static double *gensmoothnoise(double *a, int w, int h,
+static double *gensmoothnoise(VideoSys *vctx,
+                              double *a, int w, int h,
                               double *basenoise, unsigned octave);
 static void show(VideoSys *vctx, double *a, int w, int h);
 static double interpolate(double x0, double x1, double alpha);
@@ -35,6 +36,7 @@ int main(int argc, char **argv)
     (void)argv; /* UNUSED */
 
     struct machine *mctx;
+    struct event e;
     int i;
 
     if (hal_init() != HAL_NOERROR) {
@@ -54,6 +56,11 @@ int main(int argc, char **argv)
                       mctx->vsys->refs.txtlayer->cols,
                       mctx->vsys->refs.txtlayer->rows);
         sleep(1);
+
+        if (evsys_poll(mctx->esys, &e, EQ_POLL_NONBLOCKING))
+            if (e.type & EVENT_QUIT)
+                break;
+
     }
     //getchar();
     machine_poweroff(mctx);
@@ -66,13 +73,13 @@ genterrainmap(VideoSys *vctx, int w, int h)
 {
     double *pnoise;
 
-    pnoise = genperlinnoise(w, h, 7);
+    pnoise = genperlinnoise(vctx, w, h, 7);
     show(vctx, pnoise, w, h);
     free(pnoise);
 }
 
 static double *
-genperlinnoise(int w, int h, int octaves)
+genperlinnoise(VideoSys *vctx, int w, int h, int octaves)
 {
     const double persistance    = 0.7;
 
@@ -100,7 +107,7 @@ genperlinnoise(int w, int h, int octaves)
     /* Combine smooth noise */
     for (oct = octaves - 1; oct >= 0; oct--)
     {
-        gensmoothnoise(snoise, w, h, bnoise, oct);
+        gensmoothnoise(vctx, snoise, w, h, bnoise, oct);
         for (i = 0; i < w; i++) {
             for (j = 0; j < h; j++) {
                 *(pnoise + i + j * w) +=
@@ -147,7 +154,8 @@ genrandarr(int w, int h)
 }
 
 static double *
-gensmoothnoise(double *a, int w, int h, double *basenoise, unsigned octave)
+gensmoothnoise(VideoSys *vctx, double *a, int w, int h,
+               double *basenoise, unsigned octave)
 {
     int i, j;
 
@@ -180,8 +188,10 @@ gensmoothnoise(double *a, int w, int h, double *basenoise, unsigned octave)
     }
 
 #if OUTPUTSMOOTHEDNOISE == 1
-    show(a, w, h);
+    show(vctx, a, w, h);
     sleep(1);
+#else
+    (void)vctx;
 #endif
 
     return a;
