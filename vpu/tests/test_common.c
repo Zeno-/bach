@@ -9,7 +9,7 @@
 
 void vput_test_initall(void)
 {
-     if (hal_init() != HAL_NOERROR) {
+    if (hal_init() != HAL_NOERROR) {
         fputs("Inititialisation of HAL failed.\n", stderr);
         exit(1);
     }

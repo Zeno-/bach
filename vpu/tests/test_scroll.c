@@ -11,6 +11,7 @@
 #include "vpu/text.h"
 #include "vpu/config.h"
 #include "test_common.h"
+#include "hal/hal.h"
 
 #define ITERATIONS 500
 #define DOAUTOSCROLL 1
@@ -62,6 +63,15 @@ int main(int argc, char **argv)
     vpu_refresh(VPU_REFRESH_FORCE);
 
     sleep(2);
+
+
+    struct event e;
+    while(1) {
+        if (evsys_poll(&e, EQ_POLL_BLOCKING))
+            if (e.type & EVENT_QUIT)
+                break;
+    }
+
     fputs("Exiting\n", stdout);
 
     return 0;

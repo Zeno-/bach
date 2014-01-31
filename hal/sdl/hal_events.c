@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "common/macros.h"
+#include "common/warn.h"
 
 static const int maxqsize   = 1024;
 static const int isinit     = 0;
@@ -14,9 +15,15 @@ static struct event *events;
 static enum eventsyserr initqueue(eventflags eventflags);
 static void cleanup(void);
 
-inline static void ev_add(const struct event *e);
-inline static void ev_rem(void);
-inline static int  ev_isfull(void);
+inline static void eq_add(const struct event *e);
+inline static void eq_rem(void);
+inline static int  eq_isfull(void);
+inline static int  eq_isempty(void);
+static int         eq_processbackend(void);
+
+/**************************************************************************
+ * Public
+ *************************************************************************/
 
 enum eventsyserr
 evsys_initeventsys(eventflags eventflags)
@@ -24,7 +31,7 @@ evsys_initeventsys(eventflags eventflags)
     enum eventsyserr err;
 
     if (isinit) {
-        fputs("Event system already initialised. Ignoring.\n", stderr);
+        WARN("Event system already initialised. Ignoring.");
         return ESYSERR_NONE;
     }
 
@@ -35,6 +42,67 @@ evsys_initeventsys(eventflags eventflags)
 
     return ESYSERR_NONE;
 }
+
+int evsys_poll(struct event *e, enum eventpollbehaviour pollbehaviour)
+{
+    if (evsys_hasevents())
+        return evsys_get(e);
+
+    if (pollbehaviour == EQ_POLL_NONBLOCKING && !SDL_PollEvent(NULL))
+        return 0;
+    else if (pollbehaviour == EQ_POLL_BLOCKING)
+        evsys_wait();
+
+    if (eq_processbackend())
+        return evsys_get(e);
+
+    return 0;
+}
+
+void evsys_wait(void)
+{
+    SDL_WaitEvent(NULL);
+}
+
+int evsys_hasevents(void)
+{
+    return !eq_isempty();
+}
+
+int evsys_get(struct event *e)
+{
+    int headpos;
+
+    if (eq_isempty()) {
+        WARN("Attempt to get event from empty queue.");
+        return 0;
+    }
+
+    if (equeue.front == 0)
+        headpos = equeue.maxsz - 1;
+    else
+        headpos = equeue.front - 1;
+
+    memcpy(e, &events[headpos], sizeof *e);
+    eq_rem();
+
+    return 1;
+}
+
+int evsys_peek(struct event *e)
+{
+    if (eq_isempty()) {
+        WARN("Attempt to peek empty event queue.");
+        return 0;
+    }
+    memcpy(e, &events[equeue.front], sizeof *e);
+    return 1;
+}
+
+
+/**************************************************************************
+ * Private
+ *************************************************************************/
 
 static enum eventsyserr
 initqueue(eventflags eventflags)
@@ -53,29 +121,39 @@ initqueue(eventflags eventflags)
 }
 
 inline static void
-ev_add(const struct event *e)
+eq_add(const struct event *e)
 {
-    if (ev_isfull())
-        ev_rem();
-    //events[equeue.front] = FIXME: Copy event into queue
-    equeue.front = (equeue.front + 1) % (equeue.maxsz);
+    if (eq_isfull()) {
+        if (equeue.fullbehaviour == EVENTQUEUE_WHENFULL_RMOLD)
+            eq_rem();
+        else
+            return;     /* Ignore new event */
+    }
+    memcpy(&events[equeue.front], e, sizeof *e);
+    equeue.front = (equeue.front + 1) % equeue.maxsz;
 }
 
 inline static void
-ev_rem(void)
+eq_rem(void)
 {
     if (equeue.front == equeue.back) {
-        printf("Empty queue\n");
+        WARN("Attempt to remove from empty event queue.");
         return;
     }
 
-    equeue.back = (equeue.back + 1) % (equeue.maxsz);
+    equeue.back = (equeue.back + 1) % equeue.maxsz;
 }
 
 inline static int
-ev_isfull(void)
+eq_isfull(void)
 {
-    return (equeue.front + 1) % (equeue.maxsz) == equeue.back;
+    return (equeue.front + 1) % equeue.maxsz == equeue.back;
+}
+
+inline static int
+eq_isempty(void)
+{
+    return equeue.front == equeue.back;
 }
 
 static void
@@ -86,27 +164,36 @@ cleanup(void)
     }
 }
 
-#if 0
-eventmask pollevent(void)
+
+static int
+eq_processbackend(void)
 {
-    eventmask event = 0;
+    eventflags flagmask = equeue.eventflags;
+    eventflags eventtype = 0;
+    struct event e;
     SDL_Event sdlevent;
+
+    memset(&e, 0, sizeof e);
 
     while (SDL_PollEvent(&sdlevent)) {
         switch (sdlevent.type) {
         case SDL_QUIT:
-            event |= EVENT_QUIT;
+            if (flagmask & EVENT_QUIT) {
+                eventtype |= EVENT_QUIT;
+                e.type = EVENT_QUIT;
+                eq_add(&e);
+            }
             break;
         case SDL_KEYDOWN:
-            event |= EVENT_KEYDOWN;
             break;
         case SDL_KEYUP:
-            event |= EVENT_KEYUP;
+            break;
+        case SDL_MOUSEMOTION:
             break;
         default:
             break;
         }
     }
-    return event;
+    return eventtype != EVENT_NONE;
 }
-#endif
+

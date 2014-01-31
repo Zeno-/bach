@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define DEF_EVENTFLAGS (~EVENT_NONE)
+
 enum eventsyserr {
     ESYSERR_NONE,
     ESYSERR_MALLOC
@@ -14,7 +16,7 @@ enum eventbits
     EVENT_QUIT      = 1 << 0,
     EVENT_KEYDOWN   = 1 << 1,
     EVENT_KEYUP     = 1 << 2,
-    EVENT_MOUSE     = 1 << 3
+    EVENT_MOUSEMOV  = 1 << 3
 };
 
 typedef uint16_t eventflags;
@@ -36,12 +38,17 @@ struct event {
         struct kybdevent    kybd;
         struct mouseevent   mouse;
         unsigned char       quit;
-    };
+    } data;
 };
 
 enum {
     EVENTQUEUE_WHENFULL_IGNORE,
     EVENTQUEUE_WHENFULL_RMOLD
+};
+
+enum eventpollbehaviour {
+    EQ_POLL_BLOCKING,
+    EQ_POLL_NONBLOCKING
 };
 
 struct eventqueue {
@@ -53,11 +60,11 @@ struct eventqueue {
 
 
 enum eventsyserr evsys_initeventsys(eventflags eflags);
+int evsys_poll(struct event *e, enum eventpollbehaviour pollbehaviour);
 void evsys_wait(void);
-struct event *evsys_hasevents(void);
-struct event *evsys_get(void);
-struct event *evsys_peek(void);
-struct event *evsys_del(void);
+int evsys_hasevents(void);
+int evsys_get(struct event *e);
+int evsys_peek(struct event *e);
 
 
 #endif /* ZPU_HAL_EVENTS_H */
