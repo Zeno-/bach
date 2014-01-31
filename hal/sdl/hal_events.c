@@ -15,6 +15,7 @@ static struct event *events;
 static enum eventsyserr initqueue(eventflags eventflags);
 static void cleanup(void);
 
+inline static int eq_peek(struct event *e);
 inline static void eq_add(const struct event *e);
 inline static void eq_rem(void);
 inline static int  eq_isfull(void);
@@ -46,7 +47,7 @@ evsys_initeventsys(eventflags eventflags)
 int evsys_poll(struct event *e, enum eventpollbehaviour pollbehaviour)
 {
     if (evsys_hasevents())
-        return evsys_get(e);
+        return evsys_getevent(e);
 
     if (pollbehaviour == EQ_POLL_NONBLOCKING && !SDL_PollEvent(NULL))
         return 0;
@@ -54,7 +55,7 @@ int evsys_poll(struct event *e, enum eventpollbehaviour pollbehaviour)
         evsys_wait();
 
     if (eq_processbackend())
-        return evsys_get(e);
+        return evsys_getevent(e);
 
     return 0;
 }
@@ -69,36 +70,19 @@ int evsys_hasevents(void)
     return !eq_isempty();
 }
 
-int evsys_get(struct event *e)
+int evsys_getevent(struct event *e)
 {
-    int headpos;
+    int r;
 
-    if (eq_isempty()) {
-        WARN("Attempt to get event from empty queue.");
-        return 0;
-    }
-
-    if (equeue.front == 0)
-        headpos = equeue.maxsz - 1;
-    else
-        headpos = equeue.front - 1;
-
-    memcpy(e, &events[headpos], sizeof *e);
-    eq_rem();
-
-    return 1;
+    if ((r = eq_peek(e)))
+        eq_rem();
+    return r;
 }
 
-int evsys_peek(struct event *e)
+int evsys_peekevent(struct event *e)
 {
-    if (eq_isempty()) {
-        WARN("Attempt to peek empty event queue.");
-        return 0;
-    }
-    memcpy(e, &events[equeue.front], sizeof *e);
-    return 1;
+    return eq_peek(e);
 }
-
 
 /**************************************************************************
  * Private
@@ -118,6 +102,29 @@ initqueue(eventflags eventflags)
     equeue.fullbehaviour = EVENTQUEUE_WHENFULL_RMOLD;
 
     return ESYSERR_NONE;
+}
+
+inline static int
+eq_peek(struct event *e)
+{
+    int headpos;
+
+    if (eq_isempty()) {
+        WARN("Attempt to get/peek empty event queue.");
+        return 0;
+    }
+
+    /* The 'head' element is one behind the current front
+     * offset/index.
+     */
+    if (equeue.front == 0)
+        headpos = equeue.maxsz - 1;
+    else
+        headpos = equeue.front - 1;
+
+    memcpy(e, &events[headpos], sizeof *e);
+
+    return 1;
 }
 
 inline static void
@@ -163,7 +170,6 @@ cleanup(void)
         free(events);
     }
 }
-
 
 static int
 eq_processbackend(void)

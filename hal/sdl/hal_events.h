@@ -58,13 +58,12 @@ struct eventqueue {
     int         front, back;
 };
 
-
 enum eventsyserr evsys_initeventsys(eventflags eflags);
 int evsys_poll(struct event *e, enum eventpollbehaviour pollbehaviour);
 void evsys_wait(void);
 int evsys_hasevents(void);
-int evsys_get(struct event *e);
-int evsys_peek(struct event *e);
+int evsys_getevent(struct event *e);
+int evsys_peekevent(struct event *e);
 
 
 #endif /* ZPU_HAL_EVENTS_H */
