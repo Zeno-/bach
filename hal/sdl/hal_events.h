@@ -5,6 +5,8 @@
 
 #define DEF_EVENTFLAGS (~EVENT_NONE)
 
+typedef struct eventsys EventSys;
+
 enum eventsyserr {
     ESYSERR_NONE,
     ESYSERR_MALLOC
@@ -58,12 +60,15 @@ struct eventqueue {
     int         front, back;
 };
 
-enum eventsyserr evsys_initeventsys(eventflags eflags);
-int evsys_poll(struct event *e, enum eventpollbehaviour pollbehaviour);
-void evsys_wait(void);
-int evsys_hasevents(void);
-int evsys_getevent(struct event *e);
-int evsys_peekevent(struct event *e);
+EventSys *evsys_initeventsys(eventflags eflags,
+                             enum eventsyserr *err);
+void evsys_stopeventsys(EventSys *esys);
+int evsys_poll(EventSys *esys, struct event *e,
+               enum eventpollbehaviour pollbehaviour);
+void evsys_wait(EventSys *esys);
+int evsys_hasevents(EventSys *esys);
+int evsys_getevent(EventSys *esys, struct event *e);
+int evsys_peekevent(EventSys *esys, struct event *e);
 
 
 #endif /* ZPU_HAL_EVENTS_H */

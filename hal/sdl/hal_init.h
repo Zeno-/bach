@@ -8,6 +8,8 @@ enum hal_error {
     HAL_INIT_KYBDMOUSE_FAIL
 };
 
+struct machine;
+
 enum hal_error  hal_init(void);
 int             hal_isinitalised(void);
 

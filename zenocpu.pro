@@ -15,7 +15,8 @@ SOURCES += \
     hal/sdl/hal_kybdmouse.c \
     hal/sdl/hal_timer.c \
     hal/sdl/hal_video.c \
-    hal/sdl/hal_events.c
+    hal/sdl/hal_events.c \
+    machine.c
 
 HEADERS += \
     config_master.h \
@@ -35,7 +36,8 @@ HEADERS += \
     hal/sdl/hasl_timer.h \
     hal/sdl/hal_video_refs.h \
     hal/sdl/hal_events.h \
-    common/macros.h
+    common/macros.h \
+    machine.h
 
 LIBS += -lSDL
 

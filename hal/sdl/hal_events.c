@@ -6,82 +6,94 @@
 #include "common/macros.h"
 #include "common/warn.h"
 
-static const int maxqsize   = 1024;
-static const int isinit     = 0;
+struct eventsys {
+    struct eventqueue equeue;
+    struct event *events;
+};
 
-static struct eventqueue equeue;
-static struct event *events;
+#define MAXQSZ  1024
 
-static enum eventsyserr initqueue(eventflags eventflags);
-static void cleanup(void);
+static enum eventsyserr initqueue(EventSys *esys, eventflags eventflags);
+inline static void cleanup(EventSys *esys);
 
-inline static int eq_peek(struct event *e);
-inline static void eq_add(const struct event *e);
-inline static void eq_rem(void);
-inline static int  eq_isfull(void);
-inline static int  eq_isempty(void);
-static int         eq_processbackend(void);
+inline static int   eq_peek(EventSys *esys, struct event *e);
+inline static void  eq_add(EventSys *esys, const struct event *e);
+inline static void  eq_rem(EventSys *esys);
+inline static int   eq_isfull(const EventSys *esys);
+inline static int   eq_isempty(const EventSys *esys);
+static int          eq_processbackend(EventSys *esys);
 
 /**************************************************************************
  * Public
  *************************************************************************/
 
-enum eventsyserr
-evsys_initeventsys(eventflags eventflags)
+EventSys *
+evsys_initeventsys(eventflags eventflags, enum eventsyserr *err)
 {
-    enum eventsyserr err;
+    enum eventsyserr err_temp;
+    EventSys *esys;
 
-    if (isinit) {
-        WARN("Event system already initialised. Ignoring.");
-        return ESYSERR_NONE;
+    if ((esys = calloc(1, sizeof *esys)) == NULL) {
+        if (err)
+            *err = ESYSERR_MALLOC;
+        return NULL;
     }
 
-    if ((err = initqueue(eventflags)) != ESYSERR_NONE)
-        return err;
+    if ((err_temp = initqueue(esys, eventflags)) != ESYSERR_NONE) {
+        if (err)
+            *err = err_temp;
+        return NULL;
+    }
 
-    atexit(cleanup);
-
-    return ESYSERR_NONE;
+    return esys;
 }
 
-int evsys_poll(struct event *e, enum eventpollbehaviour pollbehaviour)
+void evsys_stopeventsys(EventSys *esys)
 {
-    if (evsys_hasevents())
-        return evsys_getevent(e);
+    if (esys)
+        cleanup(esys);
+}
+
+int evsys_poll(EventSys *esys, struct event *e,
+               enum eventpollbehaviour pollbehaviour)
+{
+    if (evsys_hasevents(esys))
+        return evsys_getevent(esys, e);
 
     if (pollbehaviour == EQ_POLL_NONBLOCKING && !SDL_PollEvent(NULL))
         return 0;
     else if (pollbehaviour == EQ_POLL_BLOCKING)
-        evsys_wait();
+        evsys_wait(esys);
 
-    if (eq_processbackend())
-        return evsys_getevent(e);
+    if (eq_processbackend(esys))
+        return evsys_getevent(esys, e);
 
     return 0;
 }
 
-void evsys_wait(void)
+void evsys_wait(EventSys *esys)
 {
+    (void)esys;   /* UNUSED */
     SDL_WaitEvent(NULL);
 }
 
-int evsys_hasevents(void)
+int evsys_hasevents(EventSys *esys)
 {
-    return !eq_isempty();
+    return !eq_isempty(esys);
 }
 
-int evsys_getevent(struct event *e)
+int evsys_getevent(EventSys *esys, struct event *e)
 {
     int r;
 
-    if ((r = eq_peek(e)))
-        eq_rem();
+    if ((r = eq_peek(esys, e)))
+        eq_rem(esys);
     return r;
 }
 
-int evsys_peekevent(struct event *e)
+int evsys_peekevent(EventSys *esys, struct event *e)
 {
-    return eq_peek(e);
+    return eq_peek(esys, e);
 }
 
 /**************************************************************************
@@ -89,27 +101,36 @@ int evsys_peekevent(struct event *e)
  *************************************************************************/
 
 static enum eventsyserr
-initqueue(eventflags eventflags)
+initqueue(EventSys *esys, eventflags eventflags)
 {
-    if ((events = malloc(maxqsize * sizeof *events)) == NULL)
+    if ((esys->events = malloc(MAXQSZ * sizeof *esys->events)) == NULL)
         return ESYSERR_MALLOC;
 
-    equeue.eventflags   = eventflags;
-    equeue.maxsz        = maxqsize;
-    equeue.back         = 0;
-    equeue.front        = 0;
+    esys->equeue.eventflags   = eventflags;
+    esys->equeue.maxsz        = MAXQSZ;
+    esys->equeue.back         = 0;
+    esys->equeue.front        = 0;
 
-    equeue.fullbehaviour = EVENTQUEUE_WHENFULL_RMOLD;
+    esys->equeue.fullbehaviour = EVENTQUEUE_WHENFULL_RMOLD;
 
     return ESYSERR_NONE;
 }
 
+inline static void
+cleanup(EventSys *esys)
+{
+    if (esys->events) {
+        free(esys->events);
+    }
+    free(esys);
+}
+
 inline static int
-eq_peek(struct event *e)
+eq_peek(EventSys *esys, struct event *e)
 {
     int headpos;
 
-    if (eq_isempty()) {
+    if (eq_isempty(esys)) {
         WARN("Attempt to get/peek empty event queue.");
         return 0;
     }
@@ -117,64 +138,57 @@ eq_peek(struct event *e)
     /* The 'head' element is one behind the current front
      * offset/index.
      */
-    if (equeue.front == 0)
-        headpos = equeue.maxsz - 1;
+    if (esys->equeue.front == 0)
+        headpos = esys->equeue.maxsz - 1;
     else
-        headpos = equeue.front - 1;
+        headpos = esys->equeue.front - 1;
 
-    memcpy(e, &events[headpos], sizeof *e);
+    memcpy(e, &esys->events[headpos], sizeof *e);
 
     return 1;
 }
 
 inline static void
-eq_add(const struct event *e)
+eq_add(EventSys *esys, const struct event *e)
 {
-    if (eq_isfull()) {
-        if (equeue.fullbehaviour == EVENTQUEUE_WHENFULL_RMOLD)
-            eq_rem();
+    if (eq_isfull(esys)) {
+        if (esys->equeue.fullbehaviour == EVENTQUEUE_WHENFULL_RMOLD)
+            eq_rem(esys);
         else
             return;     /* Ignore new event */
     }
-    memcpy(&events[equeue.front], e, sizeof *e);
-    equeue.front = (equeue.front + 1) % equeue.maxsz;
+    memcpy(&esys->events[esys->equeue.front], e, sizeof *e);
+    esys->equeue.front = (esys->equeue.front + 1) % esys->equeue.maxsz;
 }
 
 inline static void
-eq_rem(void)
+eq_rem(EventSys *esys)
 {
-    if (equeue.front == equeue.back) {
+    if (eq_isempty(esys)) {
         WARN("Attempt to remove from empty event queue.");
         return;
     }
 
-    equeue.back = (equeue.back + 1) % equeue.maxsz;
+    esys->equeue.back = (esys->equeue.back + 1) % esys->equeue.maxsz;
 }
 
 inline static int
-eq_isfull(void)
+eq_isfull(const EventSys *esys)
 {
-    return (equeue.front + 1) % equeue.maxsz == equeue.back;
+    return (esys->equeue.front + 1) % esys->equeue.maxsz
+            == esys->equeue.back;
 }
 
 inline static int
-eq_isempty(void)
+eq_isempty(const EventSys *esys)
 {
-    return equeue.front == equeue.back;
-}
-
-static void
-cleanup(void)
-{
-    if (events) {
-        free(events);
-    }
+    return esys->equeue.front == esys->equeue.back;
 }
 
 static int
-eq_processbackend(void)
+eq_processbackend(EventSys *esys)
 {
-    eventflags flagmask = equeue.eventflags;
+    eventflags flagmask = esys->equeue.eventflags;
     eventflags eventtype = 0;
     struct event e;
     SDL_Event sdlevent;
@@ -187,7 +201,7 @@ eq_processbackend(void)
             if (flagmask & EVENT_QUIT) {
                 eventtype |= EVENT_QUIT;
                 e.type = EVENT_QUIT;
-                eq_add(&e);
+                eq_add(esys, &e);
             }
             break;
         case SDL_KEYDOWN:
@@ -202,4 +216,3 @@ eq_processbackend(void)
     }
     return eventtype != EVENT_NONE;
 }
-

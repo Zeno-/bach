@@ -3,9 +3,8 @@
 #include <SDL/SDL.h>
 #include <stdlib.h>
 #include "config_master.h"
-#include "hal/sdl/hal_events.h"
 
-static int isinitialised = 0;
+static int isinitialised = 0;       // FIXME (global)
 
 enum hal_error
 hal_init(void)
@@ -23,8 +22,6 @@ hal_init(void)
 #endif
 
     atexit(SDL_Quit);
-
-    evsys_initeventsys(DEF_EVENTFLAGS);
 
     return HAL_NOERROR;
 }

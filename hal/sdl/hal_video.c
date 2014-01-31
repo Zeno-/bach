@@ -20,8 +20,8 @@ struct fpsctx {
     uint16_t tickInterval;
 };
 
-struct display vpu_prv;
-struct display_privdata vpu_pdata_prv;
+struct display vpu_prv;                     // FIXME (global)
+struct display_privdata vpu_pdata_prv;      // FIXME (global)
 
 static struct fpsctx fpstimer;
 static char backendstr[MAX_VERSIONINFO_LEN];
@@ -40,8 +40,8 @@ static void initfpstimer(int fpslimit);
  * Public exported refs/pointers
  *************************************************************************/
 
-static struct vpu_refs vpurefs_p;
-const struct vpu_refs *vpurefs = &vpurefs_p;
+static struct vpu_refs vpurefs_p;               // FIXME (global)
+const struct vpu_refs *vpurefs = &vpurefs_p;    // FIXME (global)
 
 /**************************************************************************
  * Public

@@ -11,7 +11,7 @@
 #include "vpu/text.h"
 #include "vpu/config.h"
 #include "test_common.h"
-#include "hal/hal.h"
+#include "machine.h"
 
 #define ITERATIONS 500
 #define DOAUTOSCROLL 1
@@ -21,14 +21,13 @@ int main(int argc, char **argv)
     (void)argc; /* UNUSED */
     (void)argv; /* UNUSED */
 
+    struct machine *mctx;
     size_t i;
     char str[30];
     uint32_t fgcolour;
     uint32_t altcolour;
 
-    vput_test_initall();
-
-    fputs("Video subsystem running\n", stdout);
+    mctx = vput_test_initall();
 
     /* Set/clear scroll flag is set */
 #if DOAUTOSCROLL == 1
@@ -67,13 +66,14 @@ int main(int argc, char **argv)
 
     struct event e;
     while(1) {
-        if (evsys_poll(&e, EQ_POLL_BLOCKING))
+        if (evsys_poll(mctx->esys, &e, EQ_POLL_BLOCKING))
             if (e.type & EVENT_QUIT)
                 break;
     }
 
     fputs("Exiting\n", stdout);
 
+    machine_poweroff(mctx);
     return 0;
 }
 
