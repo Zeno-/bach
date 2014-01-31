@@ -1,4 +1,5 @@
 #include "vpu/config.h"
+#include "machine.h"
 
 #if VPU_BUILDTESTS == 1 && VPU_BUILDTEST_TERRAIN == 1
 
@@ -33,6 +34,7 @@ int main(int argc, char **argv)
     (void)argc; /* UNUSED */
     (void)argv; /* UNUSED */
 
+    struct machine *mctx;
     int i;
 
     if (hal_init() != HAL_NOERROR) {
@@ -40,11 +42,10 @@ int main(int argc, char **argv)
        exit(1);
     }
 
-    if (vpu_init(1024, 768, 0, &vidfont8x8)
-            != VPU_ERR_NONE) {
-        fputs("Could not init VPU\n", stderr);
-        exit(1);
-    }
+    struct machine_config cfg = {
+       1024, 768, 0, &vidfont8x8
+    };
+    mctx = machine_poweron(&cfg);
 
     srand(time(NULL));
 
@@ -53,7 +54,7 @@ int main(int argc, char **argv)
         sleep(1);
     }
     //getchar();
-
+    machine_poweroff(mctx);
     return 0;
 }
 

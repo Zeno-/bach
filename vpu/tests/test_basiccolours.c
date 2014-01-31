@@ -1,4 +1,5 @@
 #include "vpu/config.h"
+#include "machine.h"
 
 #if VPU_BUILDTESTS == 1 && VPU_BUILDTEST_BASICCOLOURS == 1
 
@@ -18,10 +19,15 @@ int main(int argc, char **argv)
     (void)argc; /* UNUSED */
     (void)argv; /* UNUSED */
 
+    struct machine *mctx;
     struct display *scr;
     int i, r, c;
 
-    vput_test_initall();
+    struct machine_config cfg = {
+       SCREEN_PIXELS_X, SCREEN_PIXELS_Y, 0, NULL
+    };
+
+    mctx = machine_poweron(&cfg);
 
     scr = vpu_getinstance();
 
@@ -52,13 +58,23 @@ int main(int argc, char **argv)
         vpu_settextattr(VPU_TXTATTRIB_TRANSPARENT);
         vpu_curssetpos(30, (i/100) % (scr->txt.rows - 5) + 5);
         vpu_settextfg(vpu_rgbto32(0xFF, 0xFF, 0xFF));
+
         vpu_puts("This is a test");
 
         vpu_refresh(VPU_REFRESH_NORMAL);
     }
 
+    vpu_puts("\n\nFinished.");
     vpu_refresh(VPU_REFRESH_FORCE);
 
+    struct event e;
+    while(1) {
+        if (evsys_poll(mctx->esys, &e, EQ_POLL_BLOCKING))
+            if (e.type & EVENT_QUIT)
+                break;
+    }
+
+    machine_poweroff(mctx);
     return 0;
 }
 #endif
