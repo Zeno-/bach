@@ -242,7 +242,7 @@ show(VideoSys *vctx, double *a, int w, int h)
                 ch = '"';
             }
 #else
-            colour = vpu_rgbto32(a[i] * 255, a[i] * 255, a[i] * 255);
+            colour = vpu_rgbto32(vctx, a[i] * 255, a[i] * 255, a[i] * 255);
             ch = ' ';
 #endif
             i++;
