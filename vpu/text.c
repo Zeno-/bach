@@ -160,6 +160,9 @@ void
 vpu_puttab_c(VideoSys *vctx, uint32_t colour)
 {
     int i;
+
+    /* FIXME:   Adjust spaces printed to align with tabstops */
+
     for (i = 0; i < TXTBUFF_TABWIDTH; i++) {
         vpu_putchar_c(vctx, ' ', colour);
     }

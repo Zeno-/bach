@@ -1,6 +1,6 @@
-#ifndef ZPU_MACROS_H
-#define ZPU_MACROS_H
+#ifndef BACH_MACROS_H
+#define BACH_MACROS_H
 
 #define ABSINT(n) ((n) < 0 ? -(n) : (n))
 
-#endif
+#endif /* BACH_MACROS_H */

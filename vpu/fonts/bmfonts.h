@@ -1,5 +1,5 @@
-#ifndef VPU_BMFONTS_H
-#define VPU_BMFONTS_H
+#ifndef BACH_VPU_FONTS_H
+#define BACH_VPU_FONTS_H
 
 #define VPU_FIXED_FONT_WIDTH    8
 
@@ -14,4 +14,4 @@ extern const struct vidfont8 vidfont8x16;
 
 const unsigned char *vidfont_getglyph(const struct vidfont8 *font, int ch);
 
-#endif /* VPU_BMFONTS_H */
+#endif /* BACH_VPU_FONTS_H */

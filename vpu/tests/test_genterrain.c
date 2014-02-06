@@ -30,11 +30,8 @@ static double *gensmoothnoise(VideoSys *vctx,
 static void show(VideoSys *vctx, double *a, int w, int h);
 static double interpolate(double x0, double x1, double alpha);
 
-int main(int argc, char **argv)
+void vputest_genterrain(void)
 {
-    (void)argc; /* UNUSED */
-    (void)argv; /* UNUSED */
-
     struct machine *mctx;
     struct event e;
     int i;
@@ -64,7 +61,6 @@ int main(int argc, char **argv)
     }
     //getchar();
     machine_poweroff(mctx);
-    return 0;
 }
 
 

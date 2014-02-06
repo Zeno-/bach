@@ -1,5 +1,5 @@
-#ifndef ZPU_MACHINE_H
-#define ZPU_MACHINE_H
+#ifndef BACH_MACHINE_H
+#define BACH_MACHINE_H
 
 #include "hal/hal.h"
 #include "vpu/video.h"
@@ -19,4 +19,4 @@ struct machine_config {
 struct machine *machine_poweron(const struct machine_config *cfg);
 void machine_poweroff(struct machine *mctx);
 
-#endif
+#endif /* BACH_MACHINE_H */

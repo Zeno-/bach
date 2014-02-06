@@ -1,5 +1,5 @@
-#ifndef ZPU_HAL_EVENTS_H
-#define ZPU_HAL_EVENTS_H
+#ifndef BACH_HAL_EVENTS_H
+#define BACH_HAL_EVENTS_H
 
 #include <stdint.h>
 
@@ -71,4 +71,4 @@ int evsys_getevent(EventSys *esys, struct event *e);
 int evsys_peekevent(EventSys *esys, struct event *e);
 
 
-#endif /* ZPU_HAL_EVENTS_H */
+#endif /* BACH_HAL_EVENTS_H */

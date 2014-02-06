@@ -17,8 +17,8 @@ hal_init(void)
 
     isinitialised = 1;
 
-#ifdef DEFAULT_PROGNAME
-    SDL_WM_SetCaption(DEFAULT_PROGNAME, NULL);
+#ifdef DEFAULT_PROG_TITLE
+    SDL_WM_SetCaption(DEFAULT_PROG_TITLE, NULL);
 #endif
 
     atexit(SDL_Quit);

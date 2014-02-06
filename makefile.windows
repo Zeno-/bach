@@ -1,6 +1,6 @@
 # Configuration
 
-PROGNAME := zenocpu
+PROGNAME := bach
 
 #--- CHANGE THESE TO SUIT SDL INSTALL LOCATIONS ----------------------------
 SDL_INCLUDE_PATH := "J:/SDL-1.2.15/include" 
@@ -8,7 +8,7 @@ SDL_LIB_PATH := "J:\SDL-1.2.15\lib"
 # --------------------------------------------------------------------------
 
 INCLUDES := -I$(SDL_INCLUDE_PATH) -D_REENTRANT -D_GNU_SOURCE
-LIBS := -lmingw32 -lSDLmain -lSDL
+LIBS := -lmingw32 -lSDLmain -lSDL -llua
 
 CFLAGS := -Wall -O2 $(INCLUDES) 
 LDFLAGS := -s -L$(SDL_LIB_PATH) $(LIBS)
@@ -19,6 +19,8 @@ CFLAGS += -I. -Icommon -Ivpu/backend -Ivpu/fonts $(INCLUDES) \
 	  -DPROGNAME=\"$(PROGNAME)\"
 
 OBJECTS := \
+    main.o \
+    machine.o \
     vpu/fonts/bmfonts.o \
     vpu/render.o \
     vpu/text.o \
@@ -29,7 +31,7 @@ OBJECTS := \
     hal/sdl/hal_timer.o \
     hal/sdl/video.o \
     hal/sdl/hal_events.o \
-    machine.o
+    lua/lua_iface.o
 .c.o:
 	$(CC) -o $@ -c $(CFLAGS) $<
 
