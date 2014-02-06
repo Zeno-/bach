@@ -5,6 +5,8 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include "machine.h"
+
 #include "lua/lua_config.h"
 
 #include "vpu/vpu_tests.h"

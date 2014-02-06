@@ -3,62 +3,70 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-inline static void cleanup(struct machine *mctx);
+inline static void cleanup(struct machine *M);
 
 struct machine *
-machine_poweron(const struct machine_config *cfg)
+machine_new(void)
+{
+    struct machine *M;
+
+    if ((M = calloc(1, sizeof *M)) == NULL)
+        return NULL;        // FIXME: report error
+    return M;
+}
+
+int
+machine_poweron(struct machine *M, const struct machine_config *cfg)
 {
     enum eventsyserr e_err;
     enum vpuerror v_err;
 
-    struct machine *m;
-
-    if ((m = calloc(1, sizeof *m)) == NULL)
-        return NULL;        // FIXME: report error
-
     if (hal_init() != HAL_NOERROR) {
         fputs("Could not init HAL. Aborting.\n", stderr);
-        cleanup(m);
+        cleanup(M);
         exit(1);
     }
 
-    if ((m->esys = evsys_initeventsys(DEF_EVENTFLAGS, &e_err)) == NULL) {
+    if ((M->esys = evsys_initeventsys(DEF_EVENTFLAGS, &e_err)) == NULL) {
         fputs("Could not init event subsystem. Aborting.\n", stderr);
-        cleanup(m);
+        cleanup(M);
         exit(1);
     }
 
-    if ((m->vsys = vpu_init(cfg->video_pix_w,
+    if ((M->vsys = vpu_init(cfg->video_pix_w,
                  cfg->video_pix_h,
                  cfg->fullscreen,
                  cfg->font,
                  &v_err)) == NULL) {
-        cleanup(m);
+        cleanup(M);
         fputs("Could not init VPU. Aborting.\n", stderr);
         exit(1);
     }
 
-    return m;
+    return 1;
 }
 
 void
-machine_poweroff(struct machine *mctx)
+machine_poweroff(struct machine *M)
 {
-    cleanup(mctx);
+    cleanup(M);
 }
 
 
 inline static void
-cleanup(struct machine *mctx)
+cleanup(struct machine *M)
 {
-    if (mctx->esys) {
-        evsys_stopeventsys(mctx->esys);
-        mctx->esys = NULL;
+    if (!M)
+        return;
+
+    if (M->esys) {
+        evsys_stopeventsys(M->esys);
+        M->esys = NULL;
     }
-    if (mctx->vsys) {
-        vpu_cleanup(mctx->vsys);
-        mctx->vsys = NULL;
+    if (M->vsys) {
+        vpu_cleanup(M->vsys);
+        M->vsys = NULL;
     }
 
-    free(mctx);
+    free(M);
 }

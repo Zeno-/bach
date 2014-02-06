@@ -16,7 +16,8 @@ struct machine_config {
     const struct vidfont8 *font;
 };
 
-struct machine *machine_poweron(const struct machine_config *cfg);
-void machine_poweroff(struct machine *mctx);
+struct machine *machine_new(void);
+int machine_poweron(struct machine *M, const struct machine_config *cfg);
+void machine_poweroff(struct machine *M);
 
 #endif /* BACH_MACHINE_H */

@@ -44,7 +44,8 @@ void vputest_genterrain(void)
     struct machine_config cfg = {
        1024, 768, 0, &vidfont8x8
     };
-    mctx = machine_poweron(&cfg);
+    mctx = machine_new();
+    machine_poweron(mctx, &cfg);
 
     srand(time(NULL));
 
