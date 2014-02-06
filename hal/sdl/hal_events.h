@@ -66,6 +66,7 @@ void evsys_stopeventsys(EventSys *esys);
 int evsys_poll(EventSys *esys, struct event *e,
                enum eventpollbehaviour pollbehaviour);
 void evsys_wait(EventSys *esys);
+void evsys_waitforquit(EventSys *esys);
 int evsys_hasevents(EventSys *esys);
 int evsys_getevent(EventSys *esys, struct event *e);
 int evsys_peekevent(EventSys *esys, struct event *e);

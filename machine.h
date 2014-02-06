@@ -18,6 +18,6 @@ struct machine_config {
 
 struct machine *machine_new(void);
 int machine_poweron(struct machine *M, const struct machine_config *cfg);
-void machine_poweroff(struct machine *M);
+void machine_poweroff(struct machine **M);
 
 #endif /* BACH_MACHINE_H */

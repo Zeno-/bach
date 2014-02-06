@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-inline static void cleanup(struct machine *M);
+inline static void cleanup(struct machine **M);
 
 struct machine *
 machine_new(void)
@@ -23,13 +23,13 @@ machine_poweron(struct machine *M, const struct machine_config *cfg)
 
     if (hal_init() != HAL_NOERROR) {
         fputs("Could not init HAL. Aborting.\n", stderr);
-        cleanup(M);
+        cleanup(&M);
         exit(1);
     }
 
     if ((M->esys = evsys_initeventsys(DEF_EVENTFLAGS, &e_err)) == NULL) {
         fputs("Could not init event subsystem. Aborting.\n", stderr);
-        cleanup(M);
+        cleanup(&M);
         exit(1);
     }
 
@@ -38,7 +38,7 @@ machine_poweron(struct machine *M, const struct machine_config *cfg)
                  cfg->fullscreen,
                  cfg->font,
                  &v_err)) == NULL) {
-        cleanup(M);
+        cleanup(&M);
         fputs("Could not init VPU. Aborting.\n", stderr);
         exit(1);
     }
@@ -47,26 +47,27 @@ machine_poweron(struct machine *M, const struct machine_config *cfg)
 }
 
 void
-machine_poweroff(struct machine *M)
+machine_poweroff(struct machine **M)
 {
     cleanup(M);
 }
 
 
 inline static void
-cleanup(struct machine *M)
+cleanup(struct machine **M)
 {
-    if (!M)
+    if (!*M)
         return;
 
-    if (M->esys) {
-        evsys_stopeventsys(M->esys);
-        M->esys = NULL;
+    if ((*M)->esys) {
+        evsys_stopeventsys((*M)->esys);
+        (*M)->esys = NULL;
     }
-    if (M->vsys) {
-        vpu_cleanup(M->vsys);
-        M->vsys = NULL;
+    if ((*M)->vsys) {
+        vpu_cleanup((*M)->vsys);
+        (*M)->vsys = NULL;
     }
 
-    free(M);
+    free(*M);
+    *M = NULL;
 }

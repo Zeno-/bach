@@ -6,10 +6,15 @@
 #include <lualib.h>
 
 #include "machine.h"
-
+#include "vpu/fonts/bmfonts.h"
 #include "lua/lua_config.h"
 
+
 #include "vpu/vpu_tests.h"
+
+struct mhdl {
+    struct machine *M;
+};
 
 /* Lua standard libraries to load
  */
@@ -47,15 +52,41 @@ openlualibs(lua_State *L)
 }
 
 static int
+garbagecollect(lua_State *L)
+{
+    struct mhdl *m = luaL_checkudata(L, 1, "bach.machinehandle");
+    machine_poweroff(&m->M);
+    return 0;
+}
+
+static int
 initexports(lua_State *L)
 {
+    static const struct luaL_reg *f;
+
     luaL_newmetatable(L, "bach.machinehandle");
 
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
+    lua_pushcfunction(L, garbagecollect);
+    lua_setfield(L, -2, "__gc");
 
-    luaL_register(L, NULL, lib_methods);
-    luaL_register(L, BACH_LUA_LIBNAME, lib_funcs);
+    /* install methods into metatable */
+    for (f = lib_methods; f->func != NULL && f->name != NULL; f++) {
+        lua_pushcfunction(L, f->func);
+        lua_setfield(L, -2, f->name);
+    }
+
+    lua_createtable(L, 1, 0);
+    for (f = lib_funcs; f->func != NULL && f->name != NULL; f++) {
+        lua_pushcfunction(L, f->func);
+        lua_setfield(L, -2, f->name);
+    }
+
+    luaL_getmetatable(L, "bach.machinehandle");
+    lua_setmetatable(L, -2);
+
+    lua_setglobal(L, "bm");
 
     return 1;
 }
@@ -142,36 +173,75 @@ zvm_lua_runscript(const char *filename)
 static int
 l_runterraintest(lua_State *L)
 {
-    struct machine *M;
-    M = luaL_checkudata(L, 1, "bach.machinehandle");
+    (void)L;    /* UNUSED */
     vputest_genterrain();
     return 0;   /* no return values */
 }
 
+/* --------------------------------------------------------------------*/
+
 static int
 l_newmachine(lua_State *L)
 {
-    struct machine *M;
+    struct mhdl *m;
 
-    M = machine_new();
-    if (!M) {
-        /* FIXME: Report error */
-        return 0;
-    }
+    m = lua_newuserdata(L, sizeof *m);
+    luaL_getmetatable(L, "bach.machinehandle");
+    lua_setmetatable(L, -2);
 
-    lua_newuserdata(L, sizeof M);
+    /* FIXME: Error checking */
+    m->M = machine_new();
 
     return 1;
 }
 
-/* Exported (to Lua) functions
- */
-static const struct luaL_reg lib_funcs[] = {
-    { "newmachine",          l_newmachine    },
+static int
+l_machine_poweron(lua_State *L)
+{
+    /* FIXME: Error checking */
+
+    struct mhdl *m;
+    struct machine_config cfg = {
+       800, 600, 0, &vidfont8x8
+    };
+
+    m = luaL_checkudata(L, 1, "bach.machinehandle");
+    machine_poweron(m->M, &cfg);
+    return 0;
+}
+
+static int
+l_esys_waitforquit(lua_State *L)
+{
+    struct mhdl *m;
+
+    m = luaL_checkudata(L, 1, "bach.machinehandle");
+    evsys_waitforquit(m->M->esys);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
+   Lua export definitions
+   -------------------------------------------------------------------*/
+
+static const struct luaL_reg lib_methods[] = {
+
+    /* ---- Machine  -------------------------------------------------*/
+
+    { "poweron",            l_machine_poweron   },
+
+    /* ---- Event system ---------------------------------------------*/
+
+    { "waitforquit",        l_esys_waitforquit  },
+
+    /* ---- Tests ----------------------------------------------------*/
+
+    { "runterraintest",     l_runterraintest    },
+
     { NULL, NULL }
 };
 
-static const struct luaL_reg lib_methods[] = {
-    { "runterraintest",     l_runterraintest    },
+static const struct luaL_reg lib_funcs[] = {
+    { "newmachine",          l_newmachine       },
     { NULL, NULL }
 };

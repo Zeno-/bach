@@ -77,6 +77,19 @@ void evsys_wait(EventSys *esys)
     SDL_WaitEvent(NULL);
 }
 
+void evsys_waitforquit(EventSys *esys)
+{
+    struct event e;
+
+    while (1) {
+        if (evsys_poll(esys, &e, EQ_POLL_BLOCKING))
+            if (e.type & EVENT_QUIT)
+                break;
+    }
+
+    eq_add(esys, &e);    /* push back onto the queue */
+}
+
 int evsys_hasevents(EventSys *esys)
 {
     return !eq_isempty(esys);
