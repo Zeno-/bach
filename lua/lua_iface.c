@@ -20,7 +20,8 @@ static const luaL_reg lualibs[] = {
 };
 
 /* Fwd decl (defined at end of this file) */
-static const struct luaL_reg luafuncs[];
+static const struct luaL_reg lib_funcs[];
+static const struct luaL_reg lib_methods[];
 
 /* --------------------------------------------------------------------
    Functions not for use within Lua (PRIVATE)
@@ -46,9 +47,16 @@ openlualibs(lua_State *L)
 }
 
 static int
-exportluafuncs(lua_State *L)
+initexports(lua_State *L)
 {
-    luaL_register(L, BACH_LUA_LIBNAME, luafuncs);
+    luaL_newmetatable(L, "bach.machinehandle");
+
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    luaL_register(L, NULL, lib_methods);
+    luaL_register(L, BACH_LUA_LIBNAME, lib_funcs);
+
     return 1;
 }
 
@@ -64,7 +72,7 @@ newluainstance(int *errhandler)
     }
 
     openlualibs(L);
-    exportluafuncs(L);
+    initexports(L);
 
     lua_pushcfunction(L, errorh);  /* push traceback function */
     *errhandler = lua_gettop(L);
@@ -131,17 +139,39 @@ zvm_lua_runscript(const char *filename)
    Functions exported to Lua
    -------------------------------------------------------------------*/
 
-
 static int
 l_runterraintest(lua_State *L)
 {
+    struct machine *M;
+    M = luaL_checkudata(L, 1, "bach.machinehandle");
     vputest_genterrain();
     return 0;   /* no return values */
 }
 
+static int
+l_newmachine(lua_State *L)
+{
+    struct machine *M;
+
+    M = machine_new();
+    if (!M) {
+        /* FIXME: Report error */
+        return 0;
+    }
+
+    lua_newuserdata(L, sizeof M);
+
+    return 1;
+}
+
 /* Exported (to Lua) functions
  */
-static const struct luaL_reg luafuncs[] = {
+static const struct luaL_reg lib_funcs[] = {
+    { "newmachine",          l_newmachine    },
+    { NULL, NULL }
+};
+
+static const struct luaL_reg lib_methods[] = {
     { "runterraintest",     l_runterraintest    },
     { NULL, NULL }
 };

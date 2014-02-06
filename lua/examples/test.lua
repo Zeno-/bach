@@ -1,1 +1,2 @@
-bm.runterraintest()
+M = bm.newmachine()
+M:runterraintest()
