@@ -21,6 +21,14 @@ machine_poweron(struct machine *M, const struct machine_config *cfg)
     enum eventsyserr e_err;
     enum vpuerror v_err;
 
+    /* FIXME: Instead of reporting an error, is it better to cleanup the
+     * current machine and start anew?
+     */
+    if (M->esys || M->vsys) {
+                    /* FIXME: report error */
+        return 0;   /* Machine already on */
+    }
+
     if (hal_init() != HAL_NOERROR) {
         fputs("Could not init HAL. Aborting.\n", stderr);
         cleanup(&M);

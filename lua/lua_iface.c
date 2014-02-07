@@ -198,15 +198,39 @@ l_newmachine(lua_State *L)
 static int
 l_machine_poweron(lua_State *L)
 {
+    /* FIXME: Make function */
+    lua_Debug ar;
+    lua_getstack(L, 1, &ar);
+    lua_getinfo(L, "nSl", &ar);
+    int line = ar.currentline;
+
     /* FIXME: Error checking */
 
     struct mhdl *m;
+    const char *fontstr;
+
     struct machine_config cfg = {
        800, 600, 0, &vidfont8x8
     };
 
-    m = luaL_checkudata(L, 1, "bach.machinehandle");
-    machine_poweron(m->M, &cfg);
+    m       = luaL_checkudata(L, 1, "bach.machinehandle");
+    fontstr = luaL_checklstring(L, 5, NULL);
+
+    cfg.video_pix_w = luaL_checkinteger(L, 2);
+    cfg.video_pix_h = luaL_checkinteger(L, 3);
+    cfg.fullscreen  = luaL_checkinteger(L, 4);
+    if ((cfg.font = vidfont_getnamedfont(fontstr)) == NULL) {
+        lua_pushfstring(L, "Error. Lua line %d: invalid font \"%s\".",
+                        line, fontstr);
+        lua_error(L);
+    }
+
+    if (!machine_poweron(m->M, &cfg)) {
+        lua_pushfstring(L, "Error. Lua line %d: machine already on.",
+                        line);
+        lua_error(L);
+    }
+
     return 0;
 }
 
