@@ -61,7 +61,8 @@ void vputest_genterrain(void)
 
     }
     //getchar();
-    machine_poweroff(&mctx);
+    machine_poweroff(mctx);
+
 }
 
 

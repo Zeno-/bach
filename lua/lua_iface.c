@@ -55,7 +55,7 @@ static int
 garbagecollect(lua_State *L)
 {
     struct mhdl *m = luaL_checkudata(L, 1, "bach.machinehandle");
-    machine_poweroff(&m->M);
+    machine_destroy(&m->M);
     return 0;
 }
 
@@ -235,6 +235,17 @@ l_machine_poweron(lua_State *L)
 }
 
 static int
+l_machine_poweroff(lua_State *L)
+{
+    struct mhdl *m;
+
+    m = luaL_checkudata(L, 1, "bach.machinehandle");
+    machine_poweroff(m->M);
+
+    return 0;
+}
+
+static int
 l_esys_waitforquit(lua_State *L)
 {
     struct mhdl *m;
@@ -253,6 +264,7 @@ static const struct luaL_reg lib_methods[] = {
     /* ---- Machine  -------------------------------------------------*/
 
     { "poweron",            l_machine_poweron   },
+    { "poweroff",           l_machine_poweroff  },
 
     /* ---- Event system ---------------------------------------------*/
 

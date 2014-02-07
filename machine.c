@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-inline static void cleanup(struct machine **M);
-
 struct machine *
 machine_new(void)
 {
@@ -13,6 +11,20 @@ machine_new(void)
     if ((M = calloc(1, sizeof *M)) == NULL)
         return NULL;        // FIXME: report error
     return M;
+}
+
+void
+machine_dispose(struct machine **M)
+{
+    free(*M);
+    *M = NULL;
+}
+
+void
+machine_destroy(struct machine **M)
+{
+    machine_poweroff(*M);
+    machine_dispose(M);
 }
 
 int
@@ -31,13 +43,13 @@ machine_poweron(struct machine *M, const struct machine_config *cfg)
 
     if (hal_init() != HAL_NOERROR) {
         fputs("Could not init HAL. Aborting.\n", stderr);
-        cleanup(&M);
+        machine_destroy(&M);
         exit(1);
     }
 
     if ((M->esys = evsys_initeventsys(DEF_EVENTFLAGS, &e_err)) == NULL) {
         fputs("Could not init event subsystem. Aborting.\n", stderr);
-        cleanup(&M);
+        machine_destroy(&M);
         exit(1);
     }
 
@@ -46,7 +58,7 @@ machine_poweron(struct machine *M, const struct machine_config *cfg)
                  cfg->fullscreen,
                  cfg->font,
                  &v_err)) == NULL) {
-        cleanup(&M);
+        machine_destroy(&M);
         fputs("Could not init VPU. Aborting.\n", stderr);
         exit(1);
     }
@@ -55,27 +67,17 @@ machine_poweron(struct machine *M, const struct machine_config *cfg)
 }
 
 void
-machine_poweroff(struct machine **M)
+machine_poweroff(struct machine *M)
 {
-    cleanup(M);
-}
-
-
-inline static void
-cleanup(struct machine **M)
-{
-    if (!*M)
+    if (!M)
         return;
 
-    if ((*M)->esys) {
-        evsys_stopeventsys((*M)->esys);
-        (*M)->esys = NULL;
+    if (M->esys) {
+        evsys_stopeventsys(M->esys);
+        M->esys = NULL;
     }
-    if ((*M)->vsys) {
-        vpu_cleanup((*M)->vsys);
-        (*M)->vsys = NULL;
+    if (M->vsys) {
+        vpu_cleanup(M->vsys);
+        M->vsys = NULL;
     }
-
-    free(*M);
-    *M = NULL;
 }
