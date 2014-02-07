@@ -54,7 +54,7 @@ openlualibs(lua_State *L)
 static int
 garbagecollect(lua_State *L)
 {
-    struct mhdl *m = luaL_checkudata(L, 1, "bach.machinehandle");
+    struct mhdl *m = luaL_checkudata(L, 1, BACH_LUA_MHNDL_NAME);
     machine_destroy(&m->M);
     return 0;
 }
@@ -64,7 +64,7 @@ initexports(lua_State *L)
 {
     static const struct luaL_reg *f;
 
-    luaL_newmetatable(L, "bach.machinehandle");
+    luaL_newmetatable(L, BACH_LUA_MHNDL_NAME);
 
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
@@ -83,10 +83,10 @@ initexports(lua_State *L)
         lua_setfield(L, -2, f->name);
     }
 
-    luaL_getmetatable(L, "bach.machinehandle");
+    luaL_getmetatable(L, BACH_LUA_MHNDL_NAME);
     lua_setmetatable(L, -2);
 
-    lua_setglobal(L, "bm");
+    lua_setglobal(L, BACH_LUA_CLASS_NAME);
 
     return 1;
 }
@@ -186,7 +186,7 @@ l_newmachine(lua_State *L)
     struct mhdl *m;
 
     m = lua_newuserdata(L, sizeof *m);
-    luaL_getmetatable(L, "bach.machinehandle");
+    luaL_getmetatable(L, BACH_LUA_MHNDL_NAME);
     lua_setmetatable(L, -2);
 
     /* FIXME: Error checking */
@@ -213,7 +213,7 @@ l_machine_poweron(lua_State *L)
        800, 600, 0, &vidfont8x8
     };
 
-    m       = luaL_checkudata(L, 1, "bach.machinehandle");
+    m = luaL_checkudata(L, 1, BACH_LUA_MHNDL_NAME);
     fontstr = luaL_checklstring(L, 5, NULL);
 
     cfg.video_pix_w = luaL_checkinteger(L, 2);
@@ -239,7 +239,7 @@ l_machine_poweroff(lua_State *L)
 {
     struct mhdl *m;
 
-    m = luaL_checkudata(L, 1, "bach.machinehandle");
+    m = luaL_checkudata(L, 1, BACH_LUA_MHNDL_NAME);
     machine_poweroff(m->M);
 
     return 0;
@@ -250,7 +250,7 @@ l_esys_waitforquit(lua_State *L)
 {
     struct mhdl *m;
 
-    m = luaL_checkudata(L, 1, "bach.machinehandle");
+    m = luaL_checkudata(L, 1, BACH_LUA_MHNDL_NAME);
     evsys_waitforquit(m->M->esys);
     return 0;
 }

@@ -9,6 +9,9 @@ static int isinitialised = 0;       // FIXME (global)
 enum hal_error
 hal_init(void)
 {
+    if (isinitialised)
+        return HAL_NOERROR; /* Silently ignore */
+
     /* For SDL_Init(), The Event Handling, File I/O, and Threading
      * subsystems are initialized by default.
      */
