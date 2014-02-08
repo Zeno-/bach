@@ -113,7 +113,7 @@ printusage(const char *progname, FILE *fp)
 static void
 run_tests(void)
 {
-#   ifdef VPU_RUNTEST_TERRAIN
+#   if (VPU_RUNTEST_TERRAIN == 1)
         vputest_genterrain();
 #   endif
 }

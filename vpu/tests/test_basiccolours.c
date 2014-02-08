@@ -13,11 +13,8 @@
 #include "vpu/text.h"
 #include "config_master.h"
 
-int main(int argc, char **argv)
+void vputest_basiccolours(void)
 {
-    (void)argc; /* UNUSED */
-    (void)argv; /* UNUSED */
-
     struct machine *mctx;
     VideoSys *vsys;
     struct event e;
@@ -28,11 +25,12 @@ int main(int argc, char **argv)
 
     int i, r, c;
 
-    mctx = machine_poweron(&cfg);
+    mctx = machine_new();
+    machine_poweron(mctx, &cfg);
     vsys = mctx->vsys;
 
     vpu_settextfg(vsys, vpu_rgbto32(vsys, 0xa0, 0xa0, 0));
-    vpu_puts(vsys, DEFAULT_PROGNAME);
+    vpu_puts(vsys, DEFAULT_PROG_TITLE);
     vpu_puts(vsys, "\n");
     vpu_settextfg(vsys, vpu_rgbto32(vsys, 0xa0, 0, 0));
     vpu_puts(vsys, "Video subsystem   : Running\n");
@@ -48,8 +46,10 @@ int main(int argc, char **argv)
         vpu_curssetpos(vsys, 0, 4);
         for (r = 4; r < vsys->disp.txt.rows; r++) {
             for (c = 0; c < vsys->disp.txt.cols; c++) {
+//                vpu_settextfg(vsys,
+//                              vpu_rgbto32(vsys, r + c, rand() % 32, r + c));
                 vpu_settextfg(vsys,
-                              vpu_rgbto32(vsys, r + c, rand() % 32, r + c));
+                              vpu_rgbto32(vsys, r + c, 0, r + c));
                 vpu_putchar(vsys, ' ');
             }
             vpu_puts(vsys, "\n");
@@ -79,7 +79,6 @@ int main(int argc, char **argv)
                 break;
     }
 
-    machine_poweroff(mctx);
-    return 0;
+    machine_destroy(&mctx);
 }
 #endif
