@@ -60,7 +60,7 @@ void vputest_genterrain(void)
                 break;
 
     }
-    //getchar();
+
     machine_destroy(&mctx);
 }
 

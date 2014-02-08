@@ -8,7 +8,7 @@
 #define VPU_RUNTESTS                (VPU_BUILDTESTS)
 
 #define VPU_BUILDTEST_BASICCOLOURS  1
-#define VPU_BUILDTEST_SCROLL        0
+#define VPU_BUILDTEST_SCROLL        1
 #define VPU_BUILDTEST_TERRAIN       1
 
 #define VPU_RUNTEST_BASICCOLOURS    (VPU_BUILDTEST_BASICCOLOURS)
@@ -18,5 +18,6 @@
 
 void vputest_genterrain(void);
 void vputest_basiccolours(void);
+void vputest_scroll(void);
 
 #endif

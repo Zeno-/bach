@@ -15,11 +15,8 @@
 #define ITERATIONS 500
 #define DOAUTOSCROLL 1
 
-int main(int argc, char **argv)
+void vputest_scroll(void)
 {
-    (void)argc; /* UNUSED */
-    (void)argv; /* UNUSED */
-
     struct machine *mctx;
     VideoSys *vsys;
 
@@ -33,7 +30,8 @@ int main(int argc, char **argv)
     uint32_t fgcolour;
     uint32_t altcolour;
 
-    mctx = machine_poweron(&cfg);
+    mctx = machine_new();
+    machine_poweron(mctx, &cfg);
     vsys = mctx->vsys;
 
     /* Set/clear scroll flag is set */
@@ -83,8 +81,7 @@ int main(int argc, char **argv)
 
     fputs("Exiting\n", stdout);
 
-    machine_poweroff(mctx);
-    return 0;
+    machine_destroy(&mctx);
 }
 
 #endif
