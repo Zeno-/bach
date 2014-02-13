@@ -40,7 +40,9 @@ HEADERS += \
     hal/sdl/hal_video_refs.h \
     hal/sdl/hal_events.h \
     lua/lua_iface.h \
-    lua/lua_config.h
+    lua/lua_config.h \
+    cpu/cpu_config.h \
+    cpu/opcodes.h
 
 !win32 {
     LIBS += -lSDL -llua
