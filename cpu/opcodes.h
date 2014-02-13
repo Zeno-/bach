@@ -7,18 +7,20 @@ enum {
     /* Arithmetic (integer)
      */
 
-    OPCODE_ARITH,       /* ADD, SUB, MUL, DIV */
-                        /* Set by flag in OPCODE_ARITH instruction */
+    OPCODE_ALU,     /* Integer Arithemetic */
+                    /* ADD, SUB, MUL, DIV */
+                    /* Set by flag in OPCODE_ARITH instruction */
 
-    OPCODE_SHFT,        /* SHL, SHR, ROL, ROR */
-                        /* Set by flag in OPCODE_SHFT instruction */
+    OPCODE_SHFT,    /* SHL, SHR, ROL, ROR */
+                    /* Set by flag in OPCODE_SHFT instruction */
+
     /* Flow control
      */
-    OPCODE_JMP,
+    OPCODE_JMP,     /* JSR indicated by flag in instruction */
+    OPCODE_RET,     /* Return from subroutine, Return from interrupt etc
+                       all indicated by instruction flags */
 
-    OPCODE_JSR,
-
-    OPCODE_SKIP,    /* Skip next instruction depending on flags */
+    OPCODE_SKP,     /* Skip next instruction depending on flags */
 
     /* Load/Store (RAM access)
      */
@@ -26,7 +28,13 @@ enum {
 
     /* Register modify
      */
-    OPCODE_SET,
+    OPCODE_SET,     /* SET, SET.h, SET.l */
+                    /* Same addressing modes as flow control and load/store
+                     * Load/store instructions.
+                     *
+                     * ?? Is this opcode necessary, or can everything be
+                     * done with MOV?
+                     */
 
     /* Register bitwise
      */
@@ -34,10 +42,15 @@ enum {
                      * flags in the instruction */
     /* Misc
      */
-    OPCODE_SWI,
-    OPCODE_PUSH,    /* PUSHA set by flag */
-    OPCODE_POP,     /* POPA set by flag */
-    OPCODE_HALT,
+    OPCODE_SWI,     /* Software Interrupt */
+
+    OPCODE_USTK,    /* (User) Stack operations: PUSH, POP, PUSHA, POPA */
+                    /* Actual operation based on flags in instr. */
+
+    OPCODE_FSTK,    /* (Frame) Stack operations: PUSH, POP */
+                    /* Actual operation based on flags in instr. */
+
+    OPCODE_HLT,     /* Halt program */
     OPCODE_ERR,     /* Raise Exception */
 
     /* Comparative
@@ -48,7 +61,7 @@ enum {
 
     /* Logical ops
      */
-    OPCODE_BTST,     /* Boolean test */
+    OPCODE_LOP,      /* Logical (boolean) test */
                      /* Test registers based on boolen flag in instr. */
 
     /* Misc
@@ -83,6 +96,11 @@ enum {
  * 0101     LTE     <=
  *
  * The zero flag (Z) may be combined with any of the other combinations.
+ *
+ * Note:    For all instructions these comprise the first 4 bits of the
+ *          instruction.  Originally the opcode bits came first but it
+ *          makes more sense with the condition flags being first as they
+ *          determine whether or not the instruction is even executed.
  */
 
 /* ======================================================================
@@ -93,8 +111,8 @@ enum {
  *      DESC         : BITS
  *      -------------------
  *
- *      Opcode       : 6    64 opcodes... why would you need more?
  *      CondFlags    : 4    Condition flags
+ *      Opcode       : 6    64 opcodes... why would you need more?
  *      SetCondFlags : 1    The instruction (may) update the CPU cond flags
  *      Instr data   : 22   Op-code dependant
  *
@@ -108,17 +126,17 @@ enum {
  *
  * Arithmetic (integer) operations
  *
+ *      CondFlags    : 4        Condition flags
  *      Opcode       : 6
- *      CondFlags    : 4
  *      SetCondFlags : 1
  *
- *      Address mode : 1        0 = operand(s) registers
+ *      AddrMode     : 1        0 = operand(s) registers
  *                              1 = operand(s) immediate
  *      Op           : 2        0 = Add, 1 = Subract
  *                              2 = Multiply, 3 = Divide
  *      R<dest>      : 4
  *
- *      -------- Mode 0  R<dest> := R<srcA> op R<srcB>
+ *      -------- AddrMode 0  (registers)    R<dest> := R<srcA> op R<srcB>
  *
  *      R<srcA>      : 4
  *      R<srcB>      : 4
@@ -128,39 +146,46 @@ enum {
  *              on R<srcA> and R<srcB> has been performed and before
  *              the final result is stored in R<dest>
  *
- *      -------- Mode 1  Add operand to R<dest>
+ *      -------- AddrMode 1 (immediate)     R<dest> := R<dest> op Operand
  *
- *      Operand      : 16       R<dest> := R<dest> op Operand
+ *      Operand      : 16
+ *
+ *      Notes:
+ *          * The remainder of a division is stored in XXXXX special
+ *            purpose register
  *
  * =====================================================================
  *
  * Flow control
  *
- *      NOTE: Indirect "mode" always takes a register as an operand.
+ *      NOTE: Indirect "modes" always take a register as an operand. At
+ *            this point there is no "relative indirect".
  *
  *      Branch will occur based on the condition flags, therefore a
  *      comparison operation must be performed before the brach instruction
  *      or, for an unconditional branch, the (instruction) condition flags
  *      cleared.
  *
+ *      CondFlags    : 4    Condition flags
  *      Opcode       : 6
- *      CondFlags    : 4
- *      Mode         : 2    0 = Relative direct, 1 = Absolute indirect
+ *      AddrMode     : 2    0 = Relative direct, 1 = Absolute indirect
  *                          2 = Relative indirect, 3 = RESERVED
  *
- *                          Note that the mode field has replaced the
+ *                          Note that the AddrMode field has replaced the
  *                          "SetCondFlags" field common to many other
- *                          instructions.
+ *                          instructions. As a consequence none of the
+ *                          flow control instructions can modify the CPU
+ *                          condition flags.
  *
- *      -------- Mode: Relative direct
+ *      -------- AddrMode: Relative direct
  *
- *      Address      : 20   +/- 2^20 *instructions*
+ *      Address      : 20   +/- 2^20
  *
- *      -------- Mode: Absolute indirect
- *               Mode: Relative indirect
+ *      -------- AddrMode: Absolute indirect
+ *            -- AddrMode: Relative indirect
  *
  *      Rn           : 4
- *      Add          : 17   Add value to register to calculate final
+ *      Add          : 17   Value to add to register to calculate final
  *                          address
  */
 
