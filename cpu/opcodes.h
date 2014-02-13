@@ -6,15 +6,12 @@
 enum {
     /* Arithmetic (integer)
      */
-    OPCODE_ADD,
-    OPCODE_SUB,
-    OPCODE_MUL,
-    OPCODE_DIV,
-    OPCODE_SHL,
-    OPCODE_SHR,
-    OPCODE_ROL,
-    OPCODE_ROR,
 
+    OPCODE_ARITH,       /* ADD, SUB, MUL, DIV */
+                        /* Set by flag in OPCODE_ARITH instruction */
+
+    OPCODE_SHFT,        /* SHL, SHR, ROL, ROR */
+                        /* Set by flag in OPCODE_SHFT instruction */
     /* Flow control
      */
     OPCODE_JMP,
@@ -23,23 +20,18 @@ enum {
 
     OPCODE_SKIP,    /* Skip next instruction depending on flags */
 
-    /* Load/Store
+    /* Load/Store (RAM access)
      */
-    OPCODE_LD,
-    OPCODE_ST,
+    OPCODE_MOV,     /* LD ST (i.e. direction) Set by flags in the instr. */
 
     /* Register modify
      */
     OPCODE_SET,
-    OPCODE_CLR,
 
     /* Register bitwise
      */
-    OPCODE_AND,
-    OPCODE_OR,
-    OPCODE_XOR,
-    OPCODE_NOT,
-
+    OPCODE_BOP,     /* Actual operation (AND, OR, XOR, NOT) set by
+                     * flags in the instruction */
     /* Misc
      */
     OPCODE_SWI,
@@ -50,9 +42,14 @@ enum {
 
     /* Comparative
      */
+    OPCODE_TST,     /* Will test condition flags */
+                    /* Set CPU condition flags based on the tests
+                     * specified by the instr. condition flags */
 
-    /* Logical ops?
+    /* Logical ops
      */
+    OPCODE_BTST,     /* Boolean test */
+                     /* Test registers based on boolen flag in instr. */
 
     /* Misc
      */
@@ -88,7 +85,6 @@ enum {
  * The zero flag (Z) may be combined with any of the other combinations.
  */
 
-
 /* ======================================================================
  * Instruction Set and Bit Layouts
  *
@@ -118,16 +114,17 @@ enum {
  *
  *      Address mode : 1        0 = operand(s) registers
  *                              1 = operand(s) immediate
+ *      Op           : 2        0 = Add, 1 = Subract
+ *                              2 = Multiply, 3 = Divide
  *      R<dest>      : 4
  *
  *      -------- Mode 0  R<dest> := R<srcA> op R<srcB>
  *
  *      R<srcA>      : 4
  *      R<srcB>      : 4
- *      Shift        : 4        Multiply result by 2^n (max 16)
- *      Add          : 4        Add 2^n to result (max 16)
+ *      Shift        : 6        Multiply result by 2^n (max 64)
  *
- *          NB: The shift and add is applied after the the operation
+ *          NB: The shift is applied after the the operation
  *              on R<srcA> and R<srcB> has been performed and before
  *              the final result is stored in R<dest>
  *
