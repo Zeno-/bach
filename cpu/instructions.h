@@ -1,6 +1,8 @@
 #ifndef BACH_CPU_OPCODES_H
 #define BACH_CPU_OPCODES_H
 
+#include <stdint.h>
+
 #include "cpu_config.h"
 
 enum {
@@ -135,34 +137,55 @@ enum {
  * CPU's NE condition flag is also set.
  */
 
+/* --------------------------------------------------------------------
+   General macros for extracting/setting parts of an instruction     */
+
+
+#define INSTR_MAKESHIFT(nbits, msbpos) ( ((msbpos) + 1 - (nbits)) )
+
+#define INSTR_MAKEMASK(nbits, msbpos) \
+    ( \
+        ((1ULL << (nbits)) - 1) \
+        << INSTR_MAKESHIFT((nbits), (msbpos)) \
+    )
+
+#define INSTR_GETPART(instr, nbits, msbpos) \
+    ( \
+        ((instr) & INSTR_MAKEMASK((nbits), (msbpos))) \
+        >> INSTR_MAKESHIFT((nbits), (msbpos)) \
+    )
+
+#define INSTR_SETPART(instr, value, nbits, msbpos) \
+    ( \
+        ((instr) & ~INSTR_MAKEMASK((nbits), (msbpos))) \
+        | ((value) << INSTR_MAKESHIFT((nbits), (msbpos))) \
+    )
+
 #define INSTR_CONDFLAGS_BITS    4
 #define INSTR_OPCODE_BITS       6
 #define INSTR_SETCFLAGS_BITS    1
 
-#define INSTR_CONDFLAGS_MASK    0xf0000000
-#define INSTR_OPCODE_MASK       0x0fc00000
-#define INSTR_SETCFLAGS_MASK    0x00200000
-#define INSTR_DATA_MASK         0x001fffff
+#define INSTR_CONDFLAGS_MSBPOS  31
+#define INSTR_OPCODE_MSBPOS     27
+#define INSTR_SETCFLAGS_MSBPOS  21
 
-#define INSTR_CONDFLAGS_SHIFT   (INSTR_BITS - 4)
-#define INSTR_OPCODE_SHIFT      (INSTR_BITS - 10)
-#define INSTR_SETCFLAGS_SHIFT   (INSTR_BITS - 11)
+#define INSTR_CONDFLAGS_GET(instr) \
+    INSTR_GETPART((instr), INSTR_CONDFLAGS_BITS, INSTR_CONDFLAGS_MSBPOS)
+#define INSTR_CONDFLAGS_SET(instr, data) \
+    INSTR_SETPART((instr), (data), INSTR_CONDFLAGS_BITS, \
+                    INSTR_CONDFLAGS_MSBPOS)
 
-#define INSTR_CONDFLAGS_GET(i) \
-    ( ((i) & INSTR_CONDFLAGS_MASK) >> INSTR_CONDFLAGS_SHIFT)
-#define INSTR_CONDFLAGS_SET(i,flags) \
-    ( ((i) & ~INSTR_CONDFLAGS_MASK) | ((flags) << INSTR_CONDFLAGS_SHIFT) )
+#define INSTR_OPCODE_GET(instr) \
+    INSTR_GETPART((instr), INSTR_OPCODE_BITS, INSTR_OPCODE_MSBPOS)
+#define INSTR_OPCODE_SET(instr, data) \
+    INSTR_SETPART((instr), (data), INSTR_OPCODE_BITS, \
+                    INSTR_OPCODE_MSBPOS)
 
-#define INSTR_CONDFLAGS_GET(i) \
-    ( ((i) & INSTR_CONDFLAGS_MASK) >> INSTR_CONDFLAGS_SHIFT)
-#define INSTR_CONDFLAGS_SET(i,flags) \
-    ( ((i) & ~INSTR_CONDFLAGS_MASK) | ((flags) << INSTR_CONDFLAGS_SHIFT) )
-
-#define INSTR_SETCFLAGS_GET(i) \
-    ( ((i) & INSTR_SETCFLAGS_MASK) >> INSTR_SETCFLAGS_SHIFT)
-#define INSTR_SETCFLAGS_SET(i,flags) \
-    ( ((i) & ~INSTR_SETCFLAGS_MASK) | ((flags) << INSTR_SETCFLAGS_SHIFT) )
-
+#define INSTR_SETCFLAGS_GET(instr) \
+    INSTR_GETPART((instr), INSTR_SETCFLAGS_BITS, INSTR_SETCFLAGS_MSBPOS)
+#define INSTR_SETCFLAGS_SET(instr, data) \
+    INSTR_SETPART((instr), (data), INSTR_SETCFLAGS_BITS, \
+                    INSTR_SETCFLAGS_MSBPOS)
 
 /* =====================================================================
  * Arithmetic (integer) operations
@@ -207,8 +230,9 @@ enum {
  *      Notes:
  *          * The remainder of a division is stored in XXXXX special
  *            purpose register
- *
- * =====================================================================
+ */
+
+/* =====================================================================
  * Flow control
  * =====================================================================
  *

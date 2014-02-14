@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include <ctype.h>
 
 #include "config_master.h"
@@ -8,6 +9,9 @@
 #include "vpu/vpu_tests.h"
 
 #include "lua/lua_iface.h"
+
+
+#include "cpu/instructions.h"
 
 enum {
     RUNMODE_ERR_PARSEARGS,
@@ -31,10 +35,46 @@ static void printusage(const char *progname, FILE *fp);
 
 static void run_tests(void);
 
+
+void
+testcpuinstructions(void)
+{
+    uint32_t i;
+
+    i = INSTR_MAKEMASK(INSTR_OPCODE_BITS, INSTR_OPCODE_MSBPOS);
+    printf("%x\n", i);
+
+    i = INSTR_MAKEMASK(INSTR_SETCFLAGS_BITS, INSTR_SETCFLAGS_MSBPOS);
+    printf("%x\n", i);
+
+    i = 0;
+    i = INSTR_SETPART(i, 0x3f, INSTR_OPCODE_BITS, INSTR_OPCODE_MSBPOS);
+    printf("%x\n", i);
+
+    i = INSTR_GETPART(i, INSTR_OPCODE_BITS, INSTR_OPCODE_MSBPOS);
+    printf("%x\n", i);
+
+    i = 0;
+    i = INSTR_SETPART(i, 0xc0c0c0c0, 32, 31);
+    printf("%x\n", i);
+
+    i = INSTR_GETPART(i, 32, 31);
+    printf("%x\n", i);
+
+    i = 0;
+    i = INSTR_OPCODE_SET(i, 0x12);
+    printf("%x\n", i);
+
+    i = INSTR_OPCODE_GET(i);
+    printf("%x\n", i);
+}
+
 int main(int argc, char **argv)
 {
     int r = 1;
     struct setup setup;
+
+    testcpuinstructions();
 
     switch (parseargs(argc, argv, &setup)) {
     case RUNMODE_SHOWUSAGE:
