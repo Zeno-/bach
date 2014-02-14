@@ -42,7 +42,7 @@ HEADERS += \
     lua/lua_iface.h \
     lua/lua_config.h \
     cpu/cpu_config.h \
-    cpu/opcodes.h
+    cpu/instructions.h
 
 !win32 {
     LIBS += -lSDL -llua

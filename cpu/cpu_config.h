@@ -6,14 +6,4 @@
 
 #define BCPU_ENDIANESS      (BCPU_LITTLEENDIAN)
 
-
-#define BCPU_OPCODEBITSZ    6
-#define BCPU_REGBITSZ       4
-
-#define BCPU_OPCODE_MAXN    (1 << OPCODEBITSZ)
-#define BCPU_OPCODE_MASK    (BCPU_OPCODE_MAXN - 1)
-
-#define BCPU_GPREG_N        (1 << BCPU_REGBITSZ)
-#define BCPU_GPREG_MASK     (BCPU_GPREG_N - 1)
-
 #endif /* BACH_CPU_CONFIG_H */
