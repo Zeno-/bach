@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+
 #include "config_master.h"
 
 #include "vpu/config.h"
@@ -24,6 +26,7 @@ static int run_normal(struct setup *setup);
 static int run_lua(struct setup *setup);
 static int parseargs(int argc, char **argv, struct setup *setup);
 static const char *progname(int argc, char **argv);
+static const char *skipleadingpath(const char *s);
 static void printusage(const char *progname, FILE *fp);
 
 static void run_tests(void);
@@ -84,20 +87,29 @@ parseargs(int argc, char **argv, struct setup *setup)
 static const char *
 progname(int argc, char **argv)
 {
-    const char *s, *p;
+    const char *s;
 
-    if (argc == 0 || *argv[0] != '\0')
+    if (argc == 0 || *argv[0] == '\0')
         return DEFAULT_PROG_NAME;
 
-    s = argv[0];
+    s = skipleadingpath(argv[0]);
+
+    return *s == '\0' ? DEFAULT_PROG_NAME : s;
+}
+
+static const char *
+skipleadingpath(const char *s)
+{
+    const char *p;
 
     /* Skip over path */
-    while ((p = strpbrk(s, "\\/")))
+    while ((p = strpbrk(s, "\\/"))) {
+        while (isspace(*(p + 1)))
+            p++;
+        if (*(p + 1) == '\0')
+            break;
         s = p + 1;
-
-    if (*s == '\0')
-        s = DEFAULT_PROG_NAME;
-
+    }
     return s;
 }
 
